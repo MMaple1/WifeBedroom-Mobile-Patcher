@@ -555,6 +555,35 @@ def get_utmt_cli():
 
     raise FileNotFoundError("UndertaleModCli.exe not found. Please set UTMT_CLI environment variable.")
 
+def verify_environment():
+    """Pre-flight check verifying required Python and Java runtimes before any processing."""
+    if sys.version_info < (3, 8):
+        LOGGER.error(f"Python 3.8 or higher is required. Current version: {sys.version.split()[0]}")
+        raise RuntimeError("Outdated Python version.")
+
+    java_bin = get_jdk_tool("java")
+    java_ok = False
+    if java_bin:
+        try:
+            res = subprocess.run([java_bin, "-version"], capture_output=True)
+            if res.returncode == 0:
+                java_ok = True
+        except Exception:
+            pass
+
+    if not java_ok:
+        print("\n" + "=" * 70)
+        print(" [ERROR] Java Runtime (JRE / JDK) is required to sign Android APKs!")
+        print("=" * 70)
+        print("Java was not found on your system PATH. Android devices will refuse")
+        print("to install unsigned APK packages.\n")
+        print("Quick Solution (Choose one, free and takes 1 minute):")
+        print("  1. Recommended (OpenJDK): https://adoptium.net/ (Temurin 17 or 21)")
+        print("  2. Standard Java JRE     : https://www.java.com/")
+        print("\nNote: During installation, ensure the 'Add to PATH' option is checked.")
+        print("=" * 70 + "\n")
+        raise RuntimeError("Java Runtime Environment (java) missing from system PATH.")
+
 def get_jdk_tool(tool_name):
     jdk_dirs = [
         Path(r"C:\Program Files\Microsoft\jdk-11.0.16.101-hotspot\bin"),
@@ -5261,23 +5290,73 @@ def sign_apk_file(apk_path):
     uber_jar = find_uber_apk_signer()
 
     LOGGER.log(f"Aligning & signing APK: {apk_path.name}...")
-    if uber_jar:
-        cmd = [
-            java, "-jar", uber_jar,
-            "-a", str(apk_path),
-            "--ks", str(keystore),
-            "--ksAlias", "apkpatcherkey",
-            "--ksPass", keystore_pass,
-            "--ksKeyPass", keystore_pass,
-            "--allowResign", "--overwrite"
-        ]
-        res = subprocess.run(cmd, capture_output=True, text=True)
-        if res.returncode != 0:
-            LOGGER.error(f"Signing failed:\n{res.stdout}\n{res.stderr}")
-            raise RuntimeError("APK Signing failed.")
-    else:
+    if not uber_jar:
+        if apk_path.exists():
+            apk_path.unlink()
         LOGGER.error("uber-apk-signer.jar not found.")
         raise FileNotFoundError("uber-apk-signer.jar missing.")
+
+    cmd = [
+        java, "-jar", uber_jar,
+        "-a", str(apk_path),
+        "--ks", str(keystore),
+        "--ksAlias", "apkpatcherkey",
+        "--ksPass", keystore_pass,
+        "--ksKeyPass", keystore_pass,
+        "--allowResign", "--overwrite"
+    ]
+
+    import threading, time
+    sign_done = False
+    sign_res = [None]
+    sign_err = [None]
+
+    def _run_signer():
+        try:
+            sign_res[0] = subprocess.run(cmd, capture_output=True, text=True)
+        except Exception as e:
+            sign_err[0] = e
+        finally:
+            nonlocal sign_done
+            sign_done = True
+
+    t_sign = threading.Thread(target=_run_signer, daemon=True)
+    t_start = time.time()
+    t_sign.start()
+
+    spinner_chars = ["|", "/", "-", "\\"]
+    spin_idx = 0
+    bar_width = 28
+
+    while not sign_done:
+        elapsed = time.time() - t_start
+        pulse_pos = int((elapsed * 3.5) % (bar_width * 2))
+        if pulse_pos >= bar_width:
+            pulse_pos = (bar_width * 2 - 1) - pulse_pos
+        bar = " " * max(0, pulse_pos - 2) + "<===>" + " " * max(0, bar_width - pulse_pos - 3)
+        bar = bar[:bar_width].ljust(bar_width)
+
+        spin = spinner_chars[spin_idx % len(spinner_chars)]
+        sys.stdout.write(f"\r[*] Signing & Aligning : [{bar}] {spin} {elapsed:.1f}s (v1, v2, v3 schemes)...")
+        sys.stdout.flush()
+        spin_idx += 1
+        time.sleep(0.08)
+
+    t_sign.join()
+    sys.stdout.write("\r" + " " * 80 + "\r")
+    sys.stdout.flush()
+
+    if sign_err[0]:
+        if apk_path.exists():
+            apk_path.unlink()
+        raise sign_err[0]
+
+    res = sign_res[0]
+    if not res or res.returncode != 0:
+        if apk_path.exists():
+            apk_path.unlink()
+        LOGGER.error(f"Signing failed:\n{res.stdout if res else ''}\n{res.stderr if res else ''}")
+        raise RuntimeError("APK Signing failed. Incomplete or unsigned APK removed.")
 
     LOGGER.log("APK cryptographically aligned and signed with v1, v2, and v3 schemes!", prefix="[+]")
 
@@ -5731,6 +5810,7 @@ def main():
     parser.add_argument("--enable-toy-telemetry", action="store_true", default=False, help=argparse.SUPPRESS)
 
     args = parser.parse_args()
+    verify_environment()
     patcher_dir = Path(__file__).parent.resolve()
     current_stage = "Initialization"
 
