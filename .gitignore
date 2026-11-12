@@ -1,0 +1,34 @@
+# =====================================================================
+# WB Mobile Patcher - Git Ignore Rules
+# =====================================================================
+
+# Build Outputs & Generated Artifacts
+output/*.apk
+output/*.idsig
+output/*.bak
+output/quarantine/
+*.apk
+*.idsig
+*.bak
+!core/*.jar
+
+# User-provided Input Files (keep folder structure via .gitkeep)
+input/*
+!input/.gitkeep
+!output/.gitkeep
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.pytest_cache/
+
+# OS Artifacts & Temporary Logs
+Thumbs.db
+.DS_Store
+desktop.ini
+*.log
+patch_overlay_latest_error.log
+tmp/
+temp/
