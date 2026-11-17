@@ -20897,7 +20897,9 @@ if (tc_typing && (os_type == os_android || os_type == os_ios))
     draw_set_halign(_tc_ha);
     draw_set_valign(_tc_va);
 }
-if (!variable_instance_exists(id, "global.mob_touching_menu"))
+// was variable_instance_exists(id, "global.mob_touching_menu"), which is never true, so the flag was reset
+// every frame and a tap on an overlay menu button never counted on release
+if (!variable_global_exists("mob_touching_menu"))
 {
     global.mob_touching_menu = false;
 }
@@ -20992,6 +20994,12 @@ for (var _d = 0; _d < 4; _d++)
         _mob_tx = device_mouse_x(_d);
         _mob_ty = device_mouse_y(_d);
         mob_touch_dev = _d;
+        if (device_mouse_check_button_released(_d, mb_left))
+        {
+            // a very quick tap: pressed and released in the same frame
+            _mob_touch_r = true;
+            mob_touch_dev = -1;
+        }
         break;
     }
     else if (device_mouse_check_button(_d, mb_left))
