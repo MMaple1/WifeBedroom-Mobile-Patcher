@@ -20897,7 +20897,7 @@ if (tc_typing && (os_type == os_android || os_type == os_ios))
     draw_set_halign(_tc_ha);
     draw_set_valign(_tc_va);
 }
-// was variable_instance_exists(id, "global.mob_touching_menu"), which is never true, so the flag was reset
+// an instance-variable check on this global is never true, so the flag used to be reset
 // every frame and a tap on an overlay menu button never counted on release
 if (!variable_global_exists("mob_touching_menu"))
 {
