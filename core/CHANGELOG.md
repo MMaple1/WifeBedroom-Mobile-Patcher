@@ -4,6 +4,19 @@ All notable changes to the **WB Mobile Patcher** tool are documented in this fil
 
 ---
 
+## [Version 1.2.2] - 2026-11-17
+
+### Highlights
+- **Deeproom bundle rebased on the real Deeproom 4.0.3 code.** The mobile engine bundle replaces the game's `oFutaMatingPress`, `oBackground`, `oDialogueManager` and `oImpregnate` scripts, but it had been built from an older Deeproom build (`deeproom_vanilla`), so 4.0.3 features and fixes were lost in the APK. Every change from that older build to 4.0.3 was compared against the bundle and carried over:
+  - **Deepthroat ball-clench sprites in the wrong place:** the bundle offset them by the pack's mating-press value (`(19 + bc_mp_off_y)`); 4.0.3 uses the pack's own `[BallClench] bc_dt_off_y`. The cowgirl and reverse-cowgirl clench offsets (`bc_cg_off_y`, `bc_rc_off_y`) are read and applied as in 4.0.3 too.
+  - **Per-pack offsets read at load:** `[CumPos]` (mating press, cowgirl, deepthroat cum), `[CondomPos]` (including `deepthroat_condom_offset`; older `[condom]` keys stay as the fallback) and `[BallClench]`. Portrait kiss/boob/headpat offsets are kept per character (lover and partner) and reset when switching to a built-in character, as in 4.0.3.
+  - **Broken-condom sprites** (`custom_condom_broken.png`, `custom_xray_broken.png`), lover sperm sprites `custom_futa_sperm*.png` (older names still read), condom-break spill and fill rules, pills not changing a standard-name lover's penis, the encourage hint, mechanics slider ranges, the version string with voice packs, and the cum/condom tip markers in the hitbox view.
+  - Dialogue, dialogue packs, texture packs and music are read from `custom_stuff/` first (4.0.3), the older places second.
+- **Native behaviour restored where the bundle had changed it:** `func_get_futa_frame` is the 4.0.3 function again (the "safe fallback" returned an intact condom frame as the broken condom); a 19-frame `custom_mating_press.png` goes to the `_0.png` loader when the pack has one (`check_custom_image_size`, as in 4.0.3); the standard-name mating press loads with 9 frames at its `mating_press_origin`, unscaled.
+- Checked by compiling the bundle into the 4.0.3 `data.win` with UndertaleModCli and decompiling the result: the deepthroat draw block matches 4.0.3 except for a null check on the standard-name condom sprite.
+
+---
+
 ## [Version 1.2.1] - 2026-11-17
 
 ### Highlights
