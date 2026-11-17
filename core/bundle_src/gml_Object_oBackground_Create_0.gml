@@ -1,3 +1,14 @@
+function tc_is_save_path(arg0)
+{
+    // true for a path inside the game's own save folder (folders created on the phone)
+    var _gs = game_save_id;
+    while (string_length(_gs) > 1 && string_char_at(_gs, string_length(_gs)) == "/")
+    {
+        _gs = string_copy(_gs, 1, string_length(_gs) - 1);
+    }
+    return string_length(_gs) > 1 && string_pos(_gs, string(arg0)) == 1;
+}
+
 function tc_norm_path(arg0)
 {
     arg0 = string(arg0);
@@ -5,7 +16,7 @@ function tc_norm_path(arg0)
     {
         arg0 = string_replace_all(arg0, "//", "/");
     }
-    if (os_type == os_android || os_type == os_ios)
+    if ((os_type == os_android || os_type == os_ios) && !tc_is_save_path(arg0))
     {
         while (string_char_at(arg0, 1) == "/")
         {
@@ -28,6 +39,20 @@ function tc_dir_exists(arg0)
 function tc_ff_first(arg0, arg1)
 {
     tc_ff_items = -1;
+    if ((os_type == os_android || os_type == os_ios) && tc_is_save_path(arg0))
+    {
+        // folders created on the phone have no _manifest.txt: list them with the real file search
+        tc_ff_items = [];
+        var _real_m = file_find_first(arg0, arg1);
+        while (_real_m != "")
+        {
+            array_push(tc_ff_items, _real_m);
+            _real_m = file_find_next();
+        }
+        file_find_close();
+        tc_ff_pos = 0;
+        return tc_ff_next();
+    }
     var _m = tc_norm_path(arg0);
     var _cut = string_last_pos("/", _m);
     var _mf = (_cut > 0) ? (string_copy(_m, 1, _cut) + "_manifest.txt") : "_manifest.txt";
