@@ -1,0 +1,13 @@
+    face_x += ((face_x_set - face_x) * 0.1);
+    face_y += ((face_y_set - face_y) * 0.1);
+    var _is_custom_lover = (custom_lover_toggle == true || top_sprite == legacy_custom_mating_press || top_sprite == custom_mating_press);
+    var _spr_custom_lover_portrait = _is_custom_lover && (sprite_exists(legacy_custom_portrait) && legacy_custom_portrait != -1);
+    var _spr_custom_lover_portrait_new = _is_custom_lover && (sprite_exists(custom_portrait) && custom_portrait != -1);
+    var _lover_base_portrait = _spr_custom_lover_portrait ? legacy_custom_portrait : (_spr_custom_lover_portrait_new ? custom_portrait : func_get_portrait(top_sprite, 0));
+    if (!sprite_exists(_lover_base_portrait) || _lover_base_portrait == -1) _lover_base_portrait = sFutaPortrait1;
+    var _lover_hair_base = (sprite_exists(hair_sprite) && hair_sprite != -1) ? func_get_portrait(hair_sprite, 0) : _lover_base_portrait;
+    if (!sprite_exists(_lover_hair_base) || _lover_hair_base == -1) _lover_hair_base = _lover_base_portrait;
+    comment = "layer 0: hair (back)";
+    draw_sprite_ext(_lover_hair_base, 0, portrait_x - face_x, (portrait_y - face_y) + (top_breath * 64), 1 * custom_portrait_scale, 1 * custom_portrait_scale, 0, top_hair, 1);
+    comment = "layer 1: torso";
+    draw_sprite_ext(_lover_base_portrait, 1, portrait_x, portrait_y + (top_breath * 64), 1 * custom_portrait_scale, 1 * custom_portrait_scale, 0, top_skin, 1);

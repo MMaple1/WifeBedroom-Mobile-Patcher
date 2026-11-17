@@ -1,0 +1,3 @@
+core/gml_patches/** -text
+core/*.bundle binary
+core/bundle_src/** -text

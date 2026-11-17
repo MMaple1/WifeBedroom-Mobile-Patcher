@@ -1,0 +1,17 @@
+hmv_socket = network_create_socket_ext(1, 45736);
+hmv_active = false;
+hmv_last_packet_time = 0;
+hmv_thrust_speed = thrust_speed;
+hmv_thrust_strength = thrust_strength;
+hmv_thrust_middle = thrust_middle;
+hmv_background_color = 16777215;
+hmv_ping_port = 45737;
+hmv_ping_buffer = buffer_create(1, buffer_fixed, 1);
+hmv_speaker_size = 48;
+hmv_speaker_l_x = 32;
+hmv_speaker_l_y = 32;
+hmv_speaker_r_x = 800;
+hmv_speaker_r_y = 32;
+hmv_speaker_pulse = 0;
+hmv_speaker_l_hover = false;
+hmv_speaker_r_hover = false;

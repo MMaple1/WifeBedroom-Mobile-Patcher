@@ -1,19 +1,22 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal
 
-title WB Mobile Patcher v1.0
+title WB Mobile Patcher v1.2
 cd /d "%~dp0"
 set PYTHONDONTWRITEBYTECODE=1
 
 echo ======================================================================
-echo              WB Mobile Patcher v1.0 - Portable Suite
+echo              WB Mobile Patcher v1.2 - Portable Suite
 echo ======================================================================
 echo.
 
-where python >nul 2>nul
-if errorlevel 1 goto :no_python
+rem Prefer the Python launcher (py -3); plain "python" can be the Microsoft Store placeholder.
+set "PYEXE="
+py -3 --version >nul 2>nul && set "PYEXE=py -3"
+if not defined PYEXE python --version >nul 2>nul && set "PYEXE=python"
+if not defined PYEXE goto :no_python
 
-where java >nul 2>nul
+java -version >nul 2>nul
 if errorlevel 1 goto :no_java
 
 goto :run_tool
@@ -22,7 +25,7 @@ goto :run_tool
 echo ======================================================================
 echo [ERROR] Python is required to run WB Mobile Patcher!
 echo ======================================================================
-echo Python was not found in your system PATH.
+echo Python 3.8 or newer was not found ("py -3" and "python" both failed).
 echo.
 echo Please install Python 3.8 or higher from: https://www.python.org/
 echo IMPORTANT: During installation, make sure to check the box:
@@ -51,17 +54,23 @@ pause
 exit /b 1
 
 :run_tool
-if "%~1"=="" goto :no_args
-python -B WB_Mobile_Patcher.py %*
-goto :end
+if "%~1"=="" (
+    %PYEXE% -B WB_Mobile_Patcher.py "input"
+) else (
+    %PYEXE% -B WB_Mobile_Patcher.py %*
+)
+set "RC=%ERRORLEVEL%"
 
-:no_args
-python -B WB_Mobile_Patcher.py "input"
-
-:end
 echo.
 echo ======================================================================
-echo Finished! Check the "output\" folder for your completed APK.
+if "%RC%"=="0" (
+    echo Finished! Check the "output\" folder for your completed APK.
+    echo If any mod packs were skipped, see the *_skipped_packs.md report there.
+) else (
+    echo [ERROR] The build did not finish ^(exit code %RC%^).
+    echo See patch_overlay_latest_error.log in this folder for details.
+)
 echo ======================================================================
 echo.
 pause
+exit /b %RC%

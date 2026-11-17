@@ -1,192 +1,250 @@
-# WB Mobile Patcher v1.0
+# WB Mobile Patcher v1.2
 
-A simple tool that takes your Wife's Bedroom / Deeproom 4.0 PC game folder or mod .zip file and converts it into an Android app (.apk) that you can install and play on your phone or tablet.
+A Windows tool that turns your **Wife's Bedroom v1.5**, **Deeproom 4.0.3 Kiwami (November 2026)** and **ModRoom v3.3** PC game folders or mod `.zip` archives into signed Android apps (`.apk`) for phones and tablets.
 
----
-
-## Quick Start (3 Steps)
-
-1. Find your mod folder (for example, `Deeproom 4.0(up to date)`) or a mod `.zip` file.
-2. Drag and drop that folder or `.zip` directly onto `WB_Mobile_Patcher.bat`.
-3. Press Enter when prompted.
-
-When finished, your ready-to-install game will be waiting in the `output` folder!
+It adds touch controls, a character selection grid, mod-format bridging, engine stability fixes, in-game offset calibration and custom sound effects. Hardware telemetry (toy integration) is strictly optional and off unless you turn it on.
 
 ---
 
-## What This Tool Adds (Enhancements List)
+## Start here (the short version)
 
-When you convert your game using this tool, it automatically adds full mobile support and fixes common PC mod bugs:
+**What it does:** turns the PC version of your game (plus a mod folder if you have one) into an Android app you can install on a phone or tablet.
 
-### Touch Controls & Mobile Gameplay
-- Built for Touchscreens: Play naturally using taps, swipes, and drags on your phone screen with comfortable on-screen controls.
-- Accidental Tap Protection: When menus or character cards are open, background taps are blocked so you don't accidentally trigger actions while browsing.
-- Touch & Hold (Long Press): Press and hold on screen to perform right-click actions without needing a keyboard or mouse.
-- Smooth Swiping & Scrolling: Glide smoothly through long character lists and menus with responsive touch scrolling.
-- Touch-Friendly Bedroom Drawer: Swipe up and down or tap the enlarged navigation arrows to scroll through all your custom room backgrounds.
-- Climax Scene Protection: Open menu windows automatically close during climax scenes so you get an unobstructed view of animations.
-- Menus Stay on Screen: Draggable menu panels automatically stay within your phone's screen boundaries so they never get lost off the edges.
+1. Install two free things once: **Python** (python.org; tick *Add python.exe to PATH*) and **Java** (adoptium.net, "Temurin 17" or newer).
+2. Put the original game's Android file (`wifes_bedroom1_4.apk`, or `wifes_bedroom1_5.apk` for Wife's Bedroom v1.5) in the **`input`** folder.
+3. **Drag your game or mod folder (or its `.zip`) onto `WB_Mobile_Patcher.bat`.**
+4. Press **Enter** at every question. The default answers are the recommended ones.
+5. Wait a few minutes. When it says *Success*, your app is in the **`output`** folder. Copy the `.apk` file to your phone and open it to install.
 
-### Character Selection & Customization
-- Visual Character Grid: Browse all your custom characters in a clean thumbnail grid with pose previews.
-- Search & Favorites: Type any character's name to find them instantly, or tap the star button on any card to save your favorites.
-- Jump to Equipped Character: Opening the character selector automatically scrolls to and centers on the character you currently have equipped.
-- Automatic Character Sizing: Custom characters and partners are automatically scaled to fit the screen properly without looking stretched or misaligned.
-- Full v1.5 Mod Compatibility in Deeproom: You can use newer Wife's Bedroom v1.5 character and room mods directly inside Deeproom 4.0. The patcher automatically sorts them into your character lists in alphabetical order alongside all existing characters.
+**If something goes wrong**
+- *"Python" or "Java" not found:* install it from the links above, then restart the computer and try again.
+- *The window closes immediately:* open Command Prompt in this folder and run `python WB_Mobile_Patcher.py` to see the message.
+- *Some characters are missing in the app:* open the file ending in `_skipped_packs.md` in `output`. It lists each skipped character and why (usually a duplicate or a missing picture).
+- *Install fails on the phone:* uninstall an older copy of the game first, and allow "install unknown apps" for the app you opened the file with.
+- *Anything else:* `patch_overlay_latest_error.log` (next to the `.bat`) holds the details of the last failed build.
 
-### Audio, Dialogue & Custom Content
-- Custom Voices & Sound Packs: Modded character voices, sound effects, and background music load and stream smoothly on mobile.
-- Custom Dialogue Packs: Community dialogue packs and character-specific conversations load automatically over default lines.
-- Custom Bedrooms & Outfits: Modded wallpapers, carpets, dressers, and clothing load seamlessly without graphical glitches.
-
-### Reliability & Convenience
-- Instant Startup: Loads thousands of custom mod files in seconds without freezing or hanging when opening the game.
-- Crash Protection: Fixes common mobile crashes caused by missing mod images, sound errors, or unassigned PC variables.
-- Automatic Mod Safety Check: If a mod is missing critical files that would crash the game on your phone, it is safely moved to the `output/quarantine` folder so the rest of your game runs without issues.
-- Keep Screen Awake: Prevents your phone or tablet screen from dimming or going to sleep during gameplay.
-- Saves Your Preferences: Remembers your volume, settings, and favorited characters between game sessions.
-- Add Mods on Your Phone: Supports opening `.zip` mod packs directly on your Android device to add new characters on the go.
+The toy and hardware features are **off** unless you say yes to them. The rest of this page is for people who want the details.
 
 ---
 
-## Prerequisites (What You Need on Your Computer)
+## Requirements
 
-You only need two free programs installed:
+- **Windows** with **Python 3.8 or newer** (the launcher uses `py -3`, or `python` if the launcher isn't installed). Get it from <https://www.python.org/> and tick *Add python.exe to PATH*.
+- **Java** (any current runtime, e.g. Temurin 17 or 21 from <https://adoptium.net/>), used to sign the APK.
+- The **base game APK** for your mod's engine (see below).
+- Everything else ships in `core/`: UndertaleModCli (reads and rewrites the game code), uber-apk-signer and the signing key.
+- Toy integration needs nothing extra: the game-code patches are built into the patcher (see [Hardware telemetry](#4-hardware-telemetry-strictly-optional)).
 
-1. Python 3
-   - Download from https://www.python.org/downloads/
-   - Important: During installation, check the box that says "Add Python to PATH".
-2. Java
-   - Download from https://www.java.com/download/
-   - Needed so the tool can digitally sign the app so your phone will let you install it.
+## Required base game APK
 
-Everything else needed is already included in the folder.
+**100% User-Supplied Architecture**: The patcher operates strictly on user-supplied files. It extracts, patches, and compiles directly from your provided APK or PC game folder without relying on any bundled or proprietary base `.win` or `base.apk` binaries.
 
----
+Place the APK that matches your mod's engine in the `input/` folder, or drag it onto `WB_Mobile_Patcher.bat` together with your mod folder:
 
-## How to Use
+| Your mod | Base APK to provide | Notes |
+|---|---|---|
+| **Deeproom 4.0.3 Kiwami** | `wifes_bedroom1_4.apk` (or `wifes_bedroom.apk`) | Uses the full mobile engine in `core/mobile_engine.bundle`: `custom_stuff/` container, pose origins, custom SFX/music, in-game offset calibrator. Reads both `.spouse` and `.wife` partner packs natively |
+| **ModRoom v3.3** | `wifes_bedroom1_4.apk` (or `wifes_bedroom.apk`) | Detected as its own engine. Eradicates all `file_find_first` loops with in-memory buffer streaming, permanently replaces the red disclaimer error, and bridges reverse cowgirl to forward cowgirl with 11-frame padding |
+| **Wife's Bedroom v1.5** | `wifes_bedroom1_5.apk` | Native v1.5 manifest streaming, unified `custom/` layout, safe `[info]` descriptor synthesis |
 
-### Method 1: Drag and Drop (Easiest)
-1. Drag your game folder or `.zip` file onto `WB_Mobile_Patcher.bat`.
-   - Tip: You can also select multiple mod folders, `.zip` archives, and your base `.apk` together and drag them onto the file. The patcher will automatically combine all your mods into a single build!
-2. A command window will open. Press Enter to proceed with the recommended Default Install.
-3. Wait for the tool to finish packaging and signing your app.
-4. Open the `output` folder to get your finished `.apk`.
-
-### Method 2: Use the "input" Folder
-1. Put your mod folder or `.zip` file into the `input` folder.
-2. Put your matching base game APK into the `input` folder:
-   - For Deeproom 4.0 mods: Place `wifes_bedroom1_4.apk` (or `base.apk`).
-   - For Wife's Bedroom v1.5: Place `wifes_bedroom1_5.apk`.
-   The patcher automatically detects which version your mod uses and pairs with the matching base APK!
-3. Double-click `WB_Mobile_Patcher.bat`.
-4. Press Enter to build. (If multiple mod folders are found in `input`, you can choose which one to build from a simple numbered list).
-5. Your finished app will be in the `output` folder.
-
-*Tip for Multiple Mods*: If you drag multiple mod folders onto `WB_Mobile_Patcher.bat` at the same time, the patcher will automatically combine them all into a single build!
+The tool also looks for a matching APK next to `WB_Mobile_Patcher.bat` itself.
 
 ---
 
-## How Prompts Work
+## Quick start
 
-Whenever the tool asks a question in the command window:
-- Pressing Enter automatically accepts the recommended default choice (the capitalized letter, such as `[Y/n]` for Yes or `[y/N]` for No).
-- You can simply press Enter through all prompts to get the best recommended settings.
+1. Put your base APK (e.g. `wifes_bedroom1_4.apk`) in the `input/` folder.
+2. Drag your mod folder (e.g. `Deeproom 4.0.3`) or mod `.zip` onto **`WB_Mobile_Patcher.bat`**.
+3. Press **Enter** to accept the recommended *Default Installation*. A few short yes/no questions follow (skip duplicate packs, clean old builds, fast packaging, toy integration); pressing **Enter** on each accepts the default.
 
----
+The signed APK is written to **`output/`**. If any mod packs were left out, a report named `<apk name>_skipped_packs.md` is written next to it.
 
-## Custom Installation Options (Feature Synopsis)
+### Installing on your phone
 
-When selecting Custom Install (`[N]`), you can toggle each of the patcher's individual features. Here is what each option does:
-
-1. Core Mobile Engine & Fast Manifest Optimization
-   - Generates fast in-memory indexes of all character, dialogue, sound, and bedroom files so Android can load thousands of custom mod assets in seconds without freezing or hanging on startup.
-
-2. Universal Origin-Based Model Scaling (160px normalization)
-   - Automatically detects non-standard mod character sizes and scales them to fit the 160px GameMaker baseline so custom partners line up properly with bodies without looking stretched or misaligned.
-
-3. Engine Stability & Portrait Parity (cures requested -1 crashes)
-   - Adds defensive code shields to prevent crashes caused by missing mod portraits, broken filenames, or uninitialized variables when switching characters or poses.
-
-4. UI Polish & Climax Auto-Closing
-   - Force-closes open menu panels during climax animations for an unobstructed view, and prevents draggable menus from sliding off the screen edges.
-
-5. Character Selection Grid & Vector Star Bookmarks
-   - Replaces text lists with an interactive visual thumbnail grid, real-time name search, and 8-point geometric star buttons to bookmark your favorite characters. Includes smooth touch swipe scrolling and auto-centers on equipped characters.
-
-6. On-Device Phone Mod Sharing (open .zip mods directly on Android)
-   - Bundles a background phone activity allowing you to open and import mod `.zip` files directly on your Android phone without needing a computer.
-
-7. External ToyBridge / Intiface Telemetry (port 45735)
-   - Enables optional Bluetooth toy synchronization via local network UDP telemetry. Default is off.
-
-8. Clean Previous APK Builds
-   - Cleans older `.apk`, `.idsig`, and `.bak` files from the `output/` folder before compiling a new build to save disk space.
-
-9. Fast Packaging Mode
-   - Packages files without compression for ultra-fast (under 10 seconds) builds during quick testing and emulator use.
+1. Copy the `.apk` from `output/` to your phone (USB, cloud drive, or chat-to-self).
+2. Open it on the phone. If Android asks, allow your file manager or browser to *install unknown apps* (Settings → Apps → Special access).
+3. If an older build is installed and the install fails, uninstall the old one first.
 
 ---
 
-## Automatic File Naming
+## What this tool adds
 
-The patcher automatically names your finished app after your input:
-- If your folder is named `Deeproom 4.0(up to date)`, your app will be named `Deeproom 4.0(up to date)_modded.apk`.
-- If your zip is named `Summer_Outfits.zip`, your app will be named `Summer_Outfits_modded.apk`.
+Builds include an Android activity (`wbmods.PhoneImportActivity`) that accepts a shared `.zip` or `.json` mod and stores it in the app's `files/phone_inbox/` folder before reopening the game (turn it off with option 7 of the custom install). It has not been tested on a device, and whether the game then imports from that folder is unverified.
 
-You will find all finished apps inside the `output` folder.
+### 1. Touch controls
+
+What each engine gets differs. **Deeproom** has the full touch overlay below. **ModRoom v3.3** runs the PC game code with touch mapped to the mouse, plus touch-drag scrolling in its lists, a two-column pill menu with larger buttons, and background selection on release (no accidental room change while scrolling); it has no drawer or touch-and-hold menu. **Wife's Bedroom v1.5** uses its own mobile interface.
+- **Touchscreen play**: taps, swipes and drags with on-screen controls.
+- **Accidental tap protection**: while menus or character cards are open, taps behind them are ignored.
+- **Touch and hold**: a hold opens the radial menu, in manual mode only. Right-click actions that have no on-screen button (changing portrait, toggling the outfit) may not be reachable by touch yet.
+- **Drag to scroll**: drag through character lists, pill selections and bedroom lists (one row per drag step).
+- **Buttons act once** (Deeproom): the drawer buttons fire on release, only if the finger did not drag, and the background list only selects a room on a release within 6 px of the touch-down, so swiping to scroll does not trigger them.
+- **One finger owns a gesture** (Deeproom): a second finger no longer moves the first finger's drag.
+- **Bedroom drawer**: swipe or tap arrows to scroll through custom room backgrounds.
+- **Climax scene protection**: open menu windows close automatically during climax scenes.
+
+### 2. Mod loading
+- **Engine-aware pack handling.** Each engine gets the file names and descriptor it reads: ModRoom's native `custom_*_0.png` packs are kept as authored in ModRoom and Deeproom builds, standard-named packs are bridged where an engine needs the other names, and loose Vanilla v1.2 portraits are mapped to `custom_portrait.png`. Wife's Bedroom v1.5 reads standard names only.
+- **Smart Asset Storage Optimization (`ZIP_STORED`):** Pre-compressed media assets (`.png`, `.ogg`, `.wav`, `.mp3`) are packaged uncompressed inside the APK. This accelerates packaging by ~2.5x and eliminates GameMaker runtime decompressor latency from Android's `libyoyo.so` AssetManager during gameplay.
+- **High-Signal Post-Build Summary Card:** Renders a clean terminal summary card confirming the exact engine target, Dynamic Variable Shield activation, asset counts, in-memory manifest tables, and cryptographically signed APK path.
+- **ModRoom v3.3 Android Loop Eradication & Fallback:** Replaced legacy `file_find_first` blocking loops in bytecode with native in-memory buffer streaming, permanently replaced the red disclaimer screen with standard white disclaimer, and falls back gracefully to vanilla characters if unmodded folders are compiled.
+- **Cowgirl Bridging & Generic Slug Quarantine:** Automatic reverse cowgirl bridging and 11-frame padding for ModRoom, plus generic slug protection (`"example"`, `"partner"`).
+- **One descriptor per pack, in the target's format.** ModRoom builds write one `custom_data.wife` (a `.spouse` pack's per-pose origins are copied into the flat keys), v1.5 builds write one `custom_data.spouse` / `.futa` with an `[info] name`, and Deeproom keeps each pack's own file. Keys are only added, never changed.
+- **No duplicate `custom_*` folders**: files and index manifests go only into the directory the engine reads (Deeproom `custom_stuff/`, ModRoom root `custom_*`, v1.5 `custom/`).
+- **Pill safeties**: falls back to base frames instead of crashing or drawing nothing for Equine, Knotted and Knotted Horse pills.
+- **Character selection grid** with thumbnail caching and star favorites.
+- **Touch overlay** with buttons for fast-forward, menu toggles and interaction modes, scaled to the phone's aspect ratio.
+
+### 3. Duplicate and incompatible packs are skipped, never moved
+
+Before building, the tool checks your mod packs:
+
+- **Incompatible packs** are skipped, with the reason in the report: no `custom_data.futa/.wife/.spouse/.bedroom` file; a numbered `custom_data_1.futa` file; partner sprites in a lover folder or the reverse; ModRoom-format `_0.png` names in a v1.5 build (v1.5 cannot read them); and, for ModRoom, a pack that lacks a sprite ModRoom needs (lover: portrait, mating press, cowgirl, X-ray; partner: mating press, forward cowgirl, reverse cowgirl; a partner that has only a reverse cowgirl gets it copied, padded, as the forward one), because ModRoom would list it and then fail when the missing sprite is drawn.
+- **Duplicates** are found in three tiers: matching folder or `[info]` names, identical key art (SHA-256 of portraits, mating sheets, backgrounds, audio, dialogue), then a score that keeps the best copy (correct category for the engine, more content, not named "Copy"/"(2)"/"_old").
+
+Skipped packs are simply **left out of the APK. Your mod folder is not changed: nothing is moved or deleted.** Each build that skips anything writes two files next to the APK:
+
+- `<apk name>_skipped_packs.md`: which packs were skipped, which copy was kept, why, and how to include a pack anyway.
+- `<apk name>_skipped_packs.json`: the same list for scripts.
+
+When a pack's sprite names are bridged between the ModRoom (`_0.png`) and standard formats, the frame count of each strip is converted too: padding with blank frames by default, and also frame dropping only with `--approximate` (the format notes file lists what happened).
+
+To keep every copy of duplicates, build with `--no-quarantine-duplicates`. To physically move skipped packs out of your mod folder, add `--move-skipped`: they go to a new `output/quarantine/<date-time>/` folder and nothing is ever overwritten or deleted.
+
+### 4. Hardware telemetry (strictly optional)
+
+Off by default; the tool asks before adding any telemetry code. The game-code patches are built into the patcher (`wbp/toy_native.py` and `core/gml_patches/native_toy/`), the same for Deeproom, ModRoom and v1.5, so no extra program is needed. Direct mode (the default) needs no other program: the game talks to Intiface Central itself. The bridge and beat-sync modes also need a receiver on the PC, the ToyBridge launcher apps (`ToyLauncher.exe`, `ButtplugBridge.exe`, `HmvLive.exe`), which are not part of this tool; `--export-toy-tools` copies them to `output/Telemetry_Suite/` from `tools/toybridge/` or from an installed ToyBridge launcher (`%LOCALAPPDATA%\Programs\ToyBridgeLauncher\`) if you have one.
+
+- **Direct client (`--toy-mode direct`)**: an in-game WebSocket client that talks to Intiface Central (`ws://127.0.0.1:12345`), no Termux or bridge app needed.
+- **Retry limit**: connection attempts stop after 5 tries (`--toy-retries`) so the game doesn't keep polling.
+- **Latency compensation** (`--toy-lead`, default 200 ms): the in-game client sends the predicted stroke position 0–500 ms ahead (extrapolated from the stroke's speed, at most a quarter of the stroke period). Not tested on a device.
+- **HMV beat-sync** (`--hmv-mode`): UDP ports 45736 and 45737 and clickable bed speakers.
+- **Companion tools** (`--export-toy-tools`): copied from `tools/toybridge/` to `output/Telemetry_Suite/`; only when telemetry is enabled.
 
 ---
 
-## Missing a Mod? (The Quarantine Folder)
+## Files the tool writes
 
-If you notice a character or room mod is missing from your game, check the `output/quarantine` folder.
+| Where | What |
+|---|---|
+| `output/<name>_modded.apk` | The signed APK (with several mod inputs: `<first>_and_<N>_more_modded.apk`) |
+| `output/*.apk.idsig` | Signature file written by the signer; you don't need to copy it to the phone |
+| `output/<base>_base_backup.apk.bak` | Untouched copy of your base APK |
+| `output/<apk name>_skipped_packs.md` / `.json` | Packs left out of that build, and why |
+| `output/<mod>_validation.md` / `.json` | From `--validate-only`, when any pack would be skipped |
+| `output/quarantine/<date-time>/` | Only with `--move-skipped` |
+| `output/<apk>_patch_report.txt` | Only when some patch anchors were not found in the game build (usually harmless; see the technical specification) |
+| `output/<apk>_format_notes.txt` | Only when packs were renamed between the ModRoom (`_0.png`) and standard names, or a v1.5 build holds ModRoom-format packs it cannot read; the two formats cut animation frames differently, so check those characters in game |
+| `patch_overlay_latest_error.log` | Details of the last failed build (next to the `.bat`) |
 
-Before building your app, the patcher inspects every custom character and room mod. If a mod has missing image files, broken formatting, or issues that would cause your phone to crash, the tool automatically isolates that specific mod into `output/quarantine`.
-
-- Your files are never permanently deleted — they are simply set aside so the rest of your game can run smoothly.
-- Any working mods will install and run normally.
-
----
-
-## Building for Official Wife's Bedroom v1.5 (Optional)
-
-While this tool is primarily designed for Deeproom 4.0, it also supports building the official standalone Wife's Bedroom v1.5:
-- Place your `wifes_bedroom1_5.apk` in the `input` folder (or drag it alongside your mod folder).
-- Custom mods placed in your `custom` folder are loaded directly into the game's built-in custom selection tabs.
-- For the full mobile enhancement suite (including the visual character thumbnail grid, star favorites, and custom dialogue packs), Deeproom 4.0 is the recommended platform.
+`--clean` removes old `.apk` and `.idsig` files from `output/` before building; base backups (`.bak`) are kept.
 
 ---
 
-## Folder Layout
+## Command-line reference
 
+```text
+usage: WB_Mobile_Patcher.py [-h] [-b BASE_APK] [-o OUTPUT] [-y] [--clean] [--fast]
+                            [--validate-only] [--quarantine-duplicates] [--approximate] [--move-skipped]
+                            [--no-quarantine-duplicates]
+                            [--toy-integration {y,n}] [--toy-mode {direct,bridge,all,none}]
+                            [--toy-profile {default,easy,mid,hard,mideasy,midhard}]
+                            [--toy-lead {0,50,100,150,200,250,300,400,500}]
+                            [--toy-port TOY_PORT] [--toy-retries TOY_RETRIES]
+                            [--hmv-mode] [--export-toy-tools]
+                            [inputs ...]
+
+Positional arguments:
+  inputs                    Input path(s): .apk, PC game folder, or mod folder + base APK
+
+Options:
+  -b, --base-apk            Base APK to use (e.g. -b input/wifes_bedroom1_4.apk)
+  -o, --output              Output file path (default: output/<input_name>_modded.apk)
+  -y, --yes                 Use default settings without interactive prompts
+  --clean                   Remove old .apk/.idsig builds from output/ first (keeps .bak backups)
+  --fast                    Fast packaging (uncompressed) for quick testing
+  --validate-only           Read-only check of a mod folder; if packs would be skipped, lists them
+                            in output/<mod>_validation.md. Builds nothing, moves nothing
+  --quarantine-duplicates   Skip duplicate packs (this is the default)
+  --no-quarantine-duplicates Keep every copy of duplicate packs
+  --approximate             Also convert sprite strips whose frame count must drop frames when bridging ModRoom (_0.png) and
+                            standard names (default: lossless padding only; other strips are renamed unchanged and listed)
+  --move-skipped            Also move skipped packs to output/quarantine/<date-time>/ (never deletes)
+  --toy-integration {y,n}   Enable hardware telemetry (y/n)
+  --toy-mode {direct,bridge,all,none}
+                            'direct' (in-game WebSocket client), 'bridge' (UDP 45735), 'all', 'none'
+  --toy-profile {default,easy,mid,hard,mideasy,midhard}
+                            Default intensity profile (default: 'default')
+  --toy-lead {0,50,100,150,200,250,300,400,500}
+                            Bluetooth latency compensation in ms (default: 200)
+  --toy-port TOY_PORT       Intiface Central WebSocket port (default: 12345)
+  --toy-retries TOY_RETRIES Connection attempts before pausing (default: 5)
+  --hmv-mode                HMV audio beat-sync (UDP 45736 and 45737, bed speakers)
+  --export-toy-tools        Export companion tools to output/Telemetry_Suite/ (telemetry must be on)
 ```
-WB_Mobile_Patcher_v1.0/
-├── WB_Mobile_Patcher.bat        <- Double-click or drag-and-drop here
-├── WB_Mobile_Patcher.py         <- Main tool script
-├── README.md                    <- This guide
-│
-├── input/                       <- Drop your mod folders, zips, or base APK here
-│
-├── core/                        <- Built-in tools and engines (no need to touch)
-│
-└── output/                      <- Your finished Android apps appear here
-```
 
 ---
+
+## How the code is organised
+
+`WB_Mobile_Patcher.py` is a thin launcher. The work is done by the `wbp/` package:
+
+| Module | Contains |
+|---|---|
+| `wbp/common.py` | logger, `guarded_replace()` and the patch-miss list, `gml()` loader, `ROOT_DIR` |
+| `wbp/axml.py` | binary `AndroidManifest.xml` editor (phone mod sharing) |
+| `wbp/detect.py`, `wbp/env.py` | engine/base-APK detection; Python, Java, UndertaleModCli and signer lookup |
+| `wbp/profiles.py` | one profile per engine: which names it reads natively, which packs it can list, how partner descriptors are written |
+| `wbp/descriptors.py` | one descriptor per pack, converted for the target engine (ModRoom `.wife`, v1.5 `.spouse` / `.futa` with `[info]`) |
+| `wbp/packs.py` | pack classification, the filename-bridge planner shared by the packer and the validator, duplicate/incompatible skipping, manifests, asset gathering |
+| `wbp/engines.py` | ModRoom v3.3 and Wife's Bedroom v1.5 bytecode patchers, variable shield |
+| `wbp/gml_patches.py` | the dynamic (fallback) GML patchers |
+| `wbp/toy.py`, `wbp/toy_native.py` | ToyBridge / telemetry integration; `toy_native.py` applies the toy game-code patches (snippets in `core/gml_patches/native_toy/`) |
+| `wbp/wbconv.py` | strip padding/cropping and name rules shared with the two converters (an identical copy; `python tools/sync_wbconv.py` keeps the copies equal) |
+| `wbp/apk.py` | repackaging, signing, `patch_game_apk()` |
+| `wbp/cli.py` | prompts and `main()` |
+
+The Deeproom engine's GML (what `core/mobile_engine.bundle` contains) is edited as plain files in `core/bundle_src/`; run `python tools/bundle_tool.py pack` to rebuild the bundle and `python tools/bundle_tool.py check` to confirm it matches.
+
+The GML text that the fallback patchers look for and insert is kept in `core/gml_patches/<function>/<name>.gml`, one file per string, read byte-for-byte. Edit those files to change a patch; do not re-wrap their line endings (`.gitattributes` marks them as non-text).
+
+### Checking a change did not alter the output
+
+`python -m unittest discover -s tests` runs the unit tests (including a check that every code excerpt in `core/TECHNICAL_SPECIFICATION.md` is shipped code). `python tests/golden_harness.py` runs the real pipeline on the example games (default folder `E:/MEGA/io`, override with `--io` or `WBP_IO`) and compares hashes of every patched GML script, every APK entry and the list of missed patch anchors with `tests/golden.json`. It prints `RESULT: IDENTICAL` when nothing changed. After an intended change, run `python tests/golden_harness.py --record` to accept the new output. Scenarios whose input folders are missing are reported as skipped, not passed.
+
+## Known limitations
+
+- Builds have been checked by compiling, signing and inspecting the APK, not by playing them on a phone. The phone mod-sharing activity and the touch fixes in particular are untested on a device.
+- ModRoom (`_0.png`) and standard-name strips use different frame counts. When a pack is renamed between the two, the tool pads the strips with blank frames (nothing lost); strips that would need frames dropped (such as a partner X-ray 4 to 3) are only converted with `--approximate`, otherwise they are renamed as they are and may look offset. `output/<apk>_format_notes.txt` lists what happened. Wife's Bedroom v1.5 cannot read ModRoom-format packs at all.
+- Most standard-format (`.spouse`) partner packs have no forward cowgirl; in ModRoom builds the reverse cowgirl is copied (padded to 11 frames) to stand in for it, so the animation may not look exactly as the author intended.
+- Descriptor conversion adds keys but does not convert ModRoom's portrait hit boxes (`kiss_box_position` etc.) to Deeproom's offsets.
+- ModRoom has no Deeproom-style touch overlay (drawer, touch-and-hold radial menu): its game code has no touch handling, and that overlay belongs to Deeproom's own code. It gets touch scrolling, the two-column pill menu and release-based background picks only.
+- The toy features (direct client, UDP, HMV and the latency compensation) are applied and compile, but have not been tried with a real toy.
+- Not changed because they need a device test: a touch long-press for portrait/outfit changes, larger touch targets, drawer scroll momentum.
+- The fallback patchers for older game builds miss many anchors on current games (see `output/<apk>_patch_report.txt`); Deeproom 4.0.3 uses the bundled engine instead.
 
 ## Troubleshooting
 
-1. "Python is not recognized as an internal or external command":
-   - Python was installed without adding it to your system PATH. Re-run the Python installer, click "Modify", and make sure "Add Python to PATH" is checked.
+- **"Python is required" although Python is installed**: reinstall with *Add python.exe to PATH*, or install the Python launcher (`py`). The Microsoft Store placeholder `python` doesn't count.
+- **The build stops with an error**: open `patch_overlay_latest_error.log` next to the `.bat`; it names the failed stage and the reason.
+- **A character or room is missing in the game**: check `output/<apk name>_skipped_packs.md`; it lists every pack that was left out and how to include it. In a ModRoom build the usual reason is a missing sprite.
+- **A character looks offset or cut up**: check `output/<apk name>_format_notes.txt`; it lists packs whose strips were renamed between formats (the formats cut frames differently).
+- **ModRoom shows "Variable Index [0] out of range [0] - custom_background_name_array"**: fixed in this version (the bedroom list is now filled by the game's own check). Rebuild; if it still appears, send the error text.
+- **ModRoom shows "draw_sprite_ext ... requested -1"**: a pack with a missing sprite was listed. Rebuild with this version (it skips such packs and guards the draw) and send the error text if it still appears.
+- **"Permission denied" on an APK in `output/`**: another program has the previous build open (a phone or cloud sync such as MEGA, the Explorer preview pane, an antivirus scan). The patcher waits a few seconds and, if the file is still locked, writes the new build as `<name>_<date-time>.apk` and tells you; delete the old file once it is released. Pausing sync for the `output/` folder avoids it.
+- **The phone refuses to install**: allow *install unknown apps* for the app you opened the file with, and uninstall an older build that was signed differently.
 
-2. "Java is not recognized as an internal or external command":
-   - Java is missing. Install Java from https://www.java.com/download/ and restart your computer.
+## Third-party components
 
-3. "Base APK not found":
-   - Place the matching base game APK into the `input` folder:
-     - For Deeproom 4.0 mods: Place `wifes_bedroom1_4.apk` (or `base.apk`).
-     - For Wife's Bedroom v1.5 mods: Place `wifes_bedroom1_5.apk`.
+| Component | Location | License |
+|---|---|---|
+| UndertaleModCli (UndertaleModTool) | `core/UndertaleModCli/` | GNU GPL v3 (`core/UndertaleModCli/LICENSE.txt`); source at <https://github.com/UnderminersTeam/UndertaleModTool> |
+| uber-apk-signer | `core/uber-apk-signer.jar` | Apache License 2.0; <https://github.com/patrickfav/uber-apk-signer> |
 
-4. App won't install on your phone:
-   - On your Android phone, make sure you allow installing apps from unknown sources or your file manager app.
+**Signing key:** `core/apkpatcher.keystore` and its password file are shared by everyone who uses this repository, so every build is signed with the same key. That lets builds from different people update each other, but it also means anyone with the repository can sign an APK that installs as an update.
+
+Further reading:
+
+- [`core/TECHNICAL_SPECIFICATION.md`](core/TECHNICAL_SPECIFICATION.md): how each enhancement works inside the game, with an audit note per section.
+- [`core/ENGINE_ARCHITECTURE_REPORT.md`](core/ENGINE_ARCHITECTURE_REPORT.md): how ModRoom, Deeproom and v1.5 load packs, which descriptor files and keys each reads, frame counts, X-ray details and the conversion plan.
+- [`core/CHANGELOG.md`](core/CHANGELOG.md): what changed in each version.
