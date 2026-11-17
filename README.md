@@ -23,6 +23,12 @@ It adds touch controls, a character selection grid, mod-format bridging, engine 
 - *Install fails on the phone:* uninstall an older copy of the game first, and allow "install unknown apps" for the app you opened the file with.
 - *Anything else:* `patch_overlay_latest_error.log` (next to the `.bat`) holds the details of the last failed build.
 
+**Using it on the phone (Deeproom builds)**
+- *Add a mod:* on the title screen tap **ADD MOD** and paste a download link (`https://...`) or the file's location on the phone (for example `/sdcard/Download/mod.zip`). Easiest of all: in your phone's file manager, long-press the `.zip`, tap **Share** (or **Open with**) and pick the game.
+- *Remove a mod:* tap **REMOVE MOD** and pick it. Only mods added on the phone can be removed this way; the game restarts afterwards.
+- *Voices:* a voice pack you add appears under **VOICES**; pick it, then pick the character that should use it.
+- If the game says it cannot open a file, Android is blocking that folder: use **Share / Open with** instead.
+
 The toy and hardware features are **off** unless you say yes to them. The rest of this page is for people who want the details.
 
 ---
@@ -37,14 +43,14 @@ The toy and hardware features are **off** unless you say yes to them. The rest o
 
 ## Required base game APK
 
-**100% User-Supplied Architecture**: The patcher operates strictly on user-supplied files. It extracts, patches, and compiles directly from your provided APK or PC game folder without relying on any bundled or proprietary base `.win` or `base.apk` binaries.
+The patcher only uses files you give it: your game's APK and your PC game or mod folder. No game files are included with it.
 
 Place the APK that matches your mod's engine in the `input/` folder, or drag it onto `WB_Mobile_Patcher.bat` together with your mod folder:
 
 | Your mod | Base APK to provide | Notes |
 |---|---|---|
 | **Deeproom 4.0.3 Kiwami** | `wifes_bedroom1_4.apk` (or `wifes_bedroom.apk`) | Uses the full mobile engine in `core/mobile_engine.bundle`: `custom_stuff/` container, pose origins, custom SFX/music, in-game offset calibrator. Reads both `.spouse` and `.wife` partner packs natively |
-| **ModRoom v3.3** | `wifes_bedroom1_4.apk` (or `wifes_bedroom.apk`) | Detected as its own engine. Eradicates all `file_find_first` loops with in-memory buffer streaming, permanently replaces the red disclaimer error, and bridges reverse cowgirl to forward cowgirl with 11-frame padding |
+| **ModRoom v3.3** | `wifes_bedroom1_4.apk` (or `wifes_bedroom.apk`) | Detected as its own engine. Loads mods from an index instead of scanning folders (which phones cannot do), removes the red disclaimer error, and gives partners that only have a reverse cowgirl a forward one too |
 | **Wife's Bedroom v1.5** | `wifes_bedroom1_5.apk` | Native v1.5 manifest streaming, unified `custom/` layout, safe `[info]` descriptor synthesis |
 
 The tool also looks for a matching APK next to `WB_Mobile_Patcher.bat` itself.
@@ -69,9 +75,13 @@ The signed APK is written to **`output/`**. If any mod packs were left out, a re
 
 ## What this tool adds
 
-Builds include an Android activity (`wbmods.PhoneImportActivity`) that accepts a shared `.zip` or `.json` mod and stores it in the app's `files/phone_inbox/` folder before reopening the game (turn it off with option 7 of the custom install). It has not been tested on a device, and whether the game then imports from that folder is unverified.
+### Phone mods (details)
 
-**Adding a mod on the phone** (Deeproom builds, title screen button): the dialog accepts either an `https://` link to a `.zip`, or the path of a `.zip` / `.json` on the phone, such as `/sdcard/Download/mod.zip`, `/storage/emulated/0/Download/mod.zip` or a `file://` link (spaces in the path are fine). A local file is copied into `phone_inbox/` and imported the same way as a shared file. Android 11 and later usually block apps from reading other folders directly; the dialog then says so, and the reliable way is to open your file manager, long-press the file and **Share** it (or **Open with**) to the game. A built-in file browser would need the source of `phone_import.dex`, which is not in this repository.
+Option 7 of the custom install (on by default) adds an Android activity (`wbmods.PhoneImportActivity`) that receives a `.zip` or `.json` shared to the game ("Share" / "Open with") and puts it in the app's `files/phone_inbox/` folder; the title screen imports it from there.
+
+- **ADD MOD** accepts an `https://` link to a `.zip`, or the path of a `.zip` / `.json` on the phone (`/sdcard/...`, `/storage/emulated/0/...` or `file://...`; spaces are fine). A local file is copied into `phone_inbox/` and imported like a shared one. Android 11 and later often block reading other folders; the game then says so and suggests Share / Open with.
+- Every import also records what it created in `phone_mods_registry.txt` in the game's save folder. **REMOVE MOD**, **VOICES** and the reload at game start use that list as well as the folders, so mods added on the phone can always be found and removed. Mods added with a build older than 2026-11-17 are not in the list; if one cannot be removed, add it again once (it is recognised as a duplicate).
+- A built-in file browser would need the source of `phone_import.dex`, which is not in this repository.
 
 ### 1. Touch controls
 

@@ -1446,6 +1446,8 @@ Source: code/gml_patches/apply_hyper_sizes/hyper_toggle.gml, hyper_toggle
 
 `patch_game_apk()` edits `AndroidManifest.xml` via `AxmlEditor.add_import_activity()` to register `wbmods.PhoneImportActivity` for handling VIEW, SEND, and SEND_MULTIPLE intents targeting `.zip` and `.json` mod archives. If registered successfully, `phone_import.dex` is injected into the target APK root as the next available DEX file (`classes2.dex`). Incoming archives are stored in the app-private `files/phone_inbox/` directory.
 
+**Phone mods in the game (2026-11-17).** The title screen's ADD MOD dialog (`Other_63`) takes an `https://` link (downloaded with `http_get_file`) or a local `.zip` / `.json` path (`/sdcard/`, `/storage/emulated/0/`, `file://`), which is copied into `phone_inbox/`; the inbox check in Draw (0) imports it like a shared file. On Android, `tc_norm_path` keeps paths inside `game_save_id` absolute (`tc_is_save_path`), and `tc_ff_first` lists such folders with `file_find_first` instead of a `_manifest.txt`, because folders the game creates have no manifest. Each import also appends the packs, bedrooms, texture packs, voice packs and dialogue files it creates to `<save>/phone_mods_registry.txt` (`pm_registry_add`); the startup reload, the REMOVE MOD list and the VOICES list read it (`pm_registry_read`) besides scanning, and removing a mod drops it (`pm_registry_remove`). Remove searches up to 8 folder levels below `phone_mods/`; all imports create `phone_voices/` before copying a voice pack. Checked by `tests/test_phone_mods_registry.py`; not device-tested.
+
 Source: code/wbp/apk.py, patch_game_apk
 
 ---
