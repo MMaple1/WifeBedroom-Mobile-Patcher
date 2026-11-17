@@ -40,6 +40,95 @@ function tc_is_save_path(arg0)
     return string_length(_gs) > 1 && string_pos(_gs, string(arg0)) == 1;
 }
 
+function pm_registry_file()
+{
+    var _s = game_save_id;
+    while (string_length(_s) > 1 && string_char_at(_s, string_length(_s)) == "/")
+    {
+        _s = string_copy(_s, 1, string_length(_s) - 1);
+    }
+    return _s + "/phone_mods_registry.txt";
+}
+
+function pm_registry_read()
+{
+    // folders and files created by phone imports, one path per line (no folder listing needed)
+    var _out = [];
+    var _rf = pm_registry_file();
+    if (!file_exists(_rf))
+    {
+        return _out;
+    }
+    var _h = file_text_open_read(_rf);
+    if (_h != -1)
+    {
+        while (!file_text_eof(_h))
+        {
+            var _l = string_replace_all(string_replace_all(file_text_readln(_h), "\r", ""), "\n", "");
+            if (_l != "" && !array_contains(_out, _l))
+            {
+                array_push(_out, _l);
+            }
+        }
+        file_text_close(_h);
+    }
+    return _out;
+}
+
+function pm_registry_write(arg0)
+{
+    var _h = file_text_open_write(pm_registry_file());
+    if (_h != -1)
+    {
+        for (var _i = 0; _i < array_length(arg0); _i++)
+        {
+            file_text_write_string(_h, arg0[_i]);
+            file_text_writeln(_h);
+        }
+        file_text_close(_h);
+    }
+}
+
+function pm_registry_add(arg0)
+{
+    var _p = string(arg0);
+    if (!tc_is_save_path(_p))
+    {
+        return;
+    }
+    var _r = pm_registry_read();
+    if (!array_contains(_r, _p))
+    {
+        array_push(_r, _p);
+        pm_registry_write(_r);
+    }
+}
+
+function pm_registry_remove(arg0)
+{
+    var _p = string(arg0);
+    var _r = pm_registry_read();
+    var _keep = [];
+    for (var _i = 0; _i < array_length(_r); _i++)
+    {
+        if (_r[_i] != _p && string_pos(_p + "/", _r[_i]) != 1)
+        {
+            array_push(_keep, _r[_i]);
+        }
+    }
+    pm_registry_write(_keep);
+}
+
+function pm_registry_base(arg0)
+{
+    var _n = string(arg0);
+    while (string_pos("/", _n) > 0)
+    {
+        _n = string_delete(_n, 1, string_pos("/", _n));
+    }
+    return _n;
+}
+
 function tc_norm_path(arg0)
 {
     arg0 = string(arg0);
@@ -1349,6 +1438,7 @@ for (var _fi = 0; _fi < array_length(_futa_names); _fi++)
         custom_sprite_loaded = true;
         tutorial = false;
         ds_list_add(custom_futas_folder, _full_path);
+        pm_registry_add(_full_path);
         ds_list_add(futa_selector_names, _file);
         ds_list_add(futa_selector_has_deepthroat, true);
         ds_list_add(futa_selector_has_alts, false);
@@ -1363,6 +1453,7 @@ for (var _fi = 0; _fi < array_length(_futa_names); _fi++)
             tutorial = false;
             show_debug_message("SUCCESS: Loaded " + _file);
             ds_list_add(custom_futas_folder, _full_path);
+            pm_registry_add(_full_path);
             ds_list_add(futa_selector_names, _file);
             var _has_deep = file_exists(_full_path + "/custom_deepthroat.png");
             var _has_alts = file_exists(_full_path + "/custom_futa_cowgirl_alt_1.png") || file_exists(_full_path + "/custom_futa_mating_press_alt_1.png");
@@ -1442,6 +1533,7 @@ for (var _wi = 0; _wi < array_length(_wife_names); _wi++)
     {
         custom_wife_sprite_loaded = true;
         ds_list_add(custom_wives_folder, _full_path);
+        pm_registry_add(_full_path);
         ds_list_add(wife_selector_names, _file);
         ds_list_add(wife_selector_has_cowgirl, true);
         ds_list_add(wife_selector_portraits, -1);
@@ -1457,6 +1549,7 @@ for (var _wi = 0; _wi < array_length(_wife_names); _wi++)
                 custom_wife_sprite_loaded = true;
                 show_debug_message("loaded 1.4 legacy spouse: " + _file);
                 ds_list_add(custom_wives_folder, _full_path);
+                pm_registry_add(_full_path);
                 ds_list_add(wife_selector_names, _file);
                 var _legacy_has_deep = file_exists(_full_path + "/custom_deepthroat.png");
                 ds_list_add(wife_selector_has_cowgirl, _legacy_has_deep);
@@ -1473,6 +1566,7 @@ for (var _wi = 0; _wi < array_length(_wife_names); _wi++)
                 custom_wife_sprite_loaded = true;
                 show_debug_message("loaded custom wife");
                 ds_list_add(custom_wives_folder, _full_path);
+                pm_registry_add(_full_path);
                 ds_list_add(wife_selector_names, _file);
                 var _w_has_cowgirl = file_exists(_full_path + "/custom_wife_cowgirl_0.png");
                 ds_list_add(wife_selector_has_cowgirl, _w_has_cowgirl);
@@ -1626,6 +1720,7 @@ if (false && (os_type == os_android || os_type == os_ios))
                 {
                     var _pm_csrc = [_pm_rd];
                     var _pm_cdst = [_pm_save + "/custom_bedrooms/" + _pm_rname];
+                    pm_registry_add(_pm_cdst[0]);
                     var _pm_ci = 0;
                     while (_pm_ci < array_length(_pm_csrc))
                     {
@@ -1692,6 +1787,7 @@ if (false && (os_type == os_android || os_type == os_ios))
                                 directory_create(_pm_save + "/dialogue_packs");
                             }
                             file_copy(_pm_rd + "/" + _pm_en, _pm_save + "/dialogue_packs/" + _pm_en);
+                            pm_registry_add(_pm_save + "/dialogue_packs/" + _pm_en);
                             _pm_dlg++;
                         }
                         else if (string_copy(_pm_el, string_length(_pm_el) - 3, 4) == ".png")
@@ -1715,6 +1811,7 @@ if (false && (os_type == os_android || os_type == os_ios))
                         }
                         var _pm_csrc = [_pm_rd];
                         var _pm_cdst = [_pm_save + "/phone_voices/" + _pm_rname];
+                        pm_registry_add(_pm_cdst[0]);
                         var _pm_ci = 0;
                         while (_pm_ci < array_length(_pm_csrc))
                         {
@@ -1773,6 +1870,7 @@ if (false && (os_type == os_android || os_type == os_ios))
                 {
                     var _pm_csrc = [_pm_tsrc[_pm_t]];
                     var _pm_cdst = [_pm_tdst[_pm_t]];
+                    pm_registry_add(_pm_cdst[0]);
                     var _pm_ci = 0;
                     while (_pm_ci < array_length(_pm_csrc))
                     {
@@ -1819,6 +1917,16 @@ if (false && (os_type == os_android || os_type == os_ios))
     var _pm_queue = [_pm_root];
     var _pm_names = ["mod"];
     var _pm_depths = [0];
+    var _pm_reg = pm_registry_read();
+    for (var _pm_rg = 0; _pm_rg < array_length(_pm_reg); _pm_rg++)
+    {
+        if (string_pos("/phone_mods/", _pm_reg[_pm_rg]) > 0)
+        {
+            array_push(_pm_queue, _pm_reg[_pm_rg]);
+            array_push(_pm_names, pm_registry_base(_pm_reg[_pm_rg]));
+            array_push(_pm_depths, 99);
+        }
+    }
     var _pm_qi = 0;
     while (_pm_qi < array_length(_pm_queue))
     {
@@ -1826,6 +1934,10 @@ if (false && (os_type == os_android || os_type == os_ios))
         var _pm_name = _pm_names[_pm_qi];
         var _pm_depth = _pm_depths[_pm_qi];
         _pm_qi++;
+        if (ds_list_find_index(custom_futas_folder, _pm_dir) >= 0 || ds_list_find_index(custom_wives_folder, _pm_dir) >= 0)
+        {
+            continue;
+        }
         if (file_exists(_pm_dir + "/custom_data.futa") || file_exists(_pm_dir + "/custom_data.wife") || file_exists(_pm_dir + "/custom_data.spouse"))
         {
             var _file = _pm_name;
@@ -1841,6 +1953,7 @@ if (false && (os_type == os_android || os_type == os_ios))
                     tutorial = false;
                     show_debug_message("SUCCESS: Loaded " + _file);
                     ds_list_add(custom_futas_folder, _full_path);
+                    pm_registry_add(_full_path);
                     ds_list_add(futa_selector_names, _file);
                     var _has_deep = file_exists(_full_path + "/custom_deepthroat.png");
                     var _has_alts = file_exists(_full_path + "/custom_futa_cowgirl_alt_1.png") || file_exists(_full_path + "/custom_futa_mating_press_alt_1.png");
@@ -1866,6 +1979,7 @@ if (false && (os_type == os_android || os_type == os_ios))
                         custom_wife_sprite_loaded = true;
                         show_debug_message("loaded 1.4 legacy spouse: " + _file);
                         ds_list_add(custom_wives_folder, _full_path);
+                        pm_registry_add(_full_path);
                         ds_list_add(wife_selector_names, _file);
                         var _legacy_has_deep = file_exists(_full_path + "/custom_deepthroat.png");
                         ds_list_add(wife_selector_has_cowgirl, _legacy_has_deep);
@@ -1882,6 +1996,7 @@ if (false && (os_type == os_android || os_type == os_ios))
                         custom_wife_sprite_loaded = true;
                         show_debug_message("loaded custom wife");
                         ds_list_add(custom_wives_folder, _full_path);
+                        pm_registry_add(_full_path);
                         ds_list_add(wife_selector_names, _file);
                         var _w_has_cowgirl = file_exists(_full_path + "/custom_wife_cowgirl_0.png");
                         ds_list_add(wife_selector_has_cowgirl, _w_has_cowgirl);

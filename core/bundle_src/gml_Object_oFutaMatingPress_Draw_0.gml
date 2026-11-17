@@ -190,6 +190,7 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                     }
                     if (_pk_hit == 0 && string_pos(_pm_save + "/", pm_rm_path) == 1)
                     {
+                        pm_registry_remove(pm_rm_path);
                         if (pm_rm_kind == 1)
                         {
                             file_delete(pm_rm_path);
@@ -483,6 +484,15 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
             _pk_vf = tc_ff_next();
         }
         tc_ff_close();
+        var _pk_reg = pm_registry_read();
+        for (var _pk_rg = 0; _pk_rg < array_length(_pk_reg); _pk_rg++)
+        {
+            if (string_pos("/phone_voices/", _pk_reg[_pk_rg]) > 0 && !array_contains(pm_pick_paths, _pk_reg[_pk_rg]) && tc_dir_exists(_pk_reg[_pk_rg]))
+            {
+                array_push(pm_pick_list, pm_registry_base(_pk_reg[_pk_rg]));
+                array_push(pm_pick_paths, _pk_reg[_pk_rg]);
+            }
+        }
         pm_pick_page = 0;
         if (array_length(pm_pick_list) == 0)
         {
@@ -509,6 +519,16 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
         var _pm_queue = [_rm_root];
         var _pm_names = ["mod"];
         var _pm_depths = [0];
+        var _rm_reg = pm_registry_read();
+        for (var _rm_rg = 0; _rm_rg < array_length(_rm_reg); _rm_rg++)
+        {
+            if (string_pos("/phone_mods/", _rm_reg[_rm_rg]) > 0)
+            {
+                array_push(_pm_queue, _rm_reg[_rm_rg]);
+                array_push(_pm_names, pm_registry_base(_rm_reg[_rm_rg]));
+                array_push(_pm_depths, 99);
+            }
+        }
         var _pm_qi = 0;
         while (_pm_qi < array_length(_pm_queue))
         {
@@ -527,9 +547,12 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                 {
                     _rm_label = "BACKGROUND";
                 }
-                array_push(pm_pick_list, _rm_label + " - " + _pm_name);
-                array_push(pm_pick_paths, _pm_dir);
-                array_push(pm_pick_kinds, 0);
+                if (!array_contains(pm_pick_paths, _pm_dir))
+                {
+                    array_push(pm_pick_list, _rm_label + " - " + _pm_name);
+                    array_push(pm_pick_paths, _pm_dir);
+                    array_push(pm_pick_kinds, 0);
+                }
             }
             else if (_pm_depth < 8)
             {
@@ -595,6 +618,40 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
             _rm_f = tc_ff_next();
         }
         tc_ff_close();
+        // bedrooms, textures, dialogue and voices recorded by phone imports (when folder listing finds nothing)
+        for (var _rm_rg = 0; _rm_rg < array_length(_rm_reg); _rm_rg++)
+        {
+            var _rm_p = _rm_reg[_rm_rg];
+            if (array_contains(pm_pick_paths, _rm_p))
+            {
+                continue;
+            }
+            var _rm_n = pm_registry_base(_rm_p);
+            if (string_pos("/custom_bedrooms/", _rm_p) > 0 && tc_dir_exists(_rm_p))
+            {
+                array_push(pm_pick_list, "BACKGROUND - " + _rm_n);
+                array_push(pm_pick_paths, _rm_p);
+                array_push(pm_pick_kinds, 0);
+            }
+            else if (string_pos("/texture_packs/", _rm_p) > 0 && tc_dir_exists(_rm_p))
+            {
+                array_push(pm_pick_list, "TEXTURES - " + _rm_n);
+                array_push(pm_pick_paths, _rm_p);
+                array_push(pm_pick_kinds, 0);
+            }
+            else if (string_pos("/phone_voices/", _rm_p) > 0 && tc_dir_exists(_rm_p))
+            {
+                array_push(pm_pick_list, "VOICE - " + _rm_n);
+                array_push(pm_pick_paths, _rm_p);
+                array_push(pm_pick_kinds, 2);
+            }
+            else if (string_pos("/dialogue_packs/", _rm_p) > 0 && file_exists(_rm_p))
+            {
+                array_push(pm_pick_list, "DIALOGUE - " + _rm_n);
+                array_push(pm_pick_paths, _rm_p);
+                array_push(pm_pick_kinds, 1);
+            }
+        }
         pm_pick_page = 0;
         if (array_length(pm_pick_list) == 0)
         {
@@ -651,6 +708,7 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                         directory_create(_pm_save + "/dialogue_packs");
                     }
                     file_copy(_pm_zip, _pm_save + "/dialogue_packs/" + _pm_fn);
+                    pm_registry_add(_pm_save + "/dialogue_packs/" + _pm_fn);
                     _pm_dlg++;
                     pm_status = "Added dialogue pack " + _pm_fn + " - restart the game to use it.";
                 }
@@ -788,6 +846,7 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                                     tutorial = false;
                                     show_debug_message("SUCCESS: Loaded " + _file);
                                     ds_list_add(custom_futas_folder, _full_path);
+                                    pm_registry_add(_full_path);
                                     ds_list_add(futa_selector_names, _file);
                                     var _has_deep = file_exists(_full_path + "/custom_deepthroat.png");
                                     var _has_alts = file_exists(_full_path + "/custom_futa_cowgirl_alt_1.png") || file_exists(_full_path + "/custom_futa_mating_press_alt_1.png");
@@ -813,6 +872,7 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                                         custom_wife_sprite_loaded = true;
                                         show_debug_message("loaded 1.4 legacy spouse: " + _file);
                                         ds_list_add(custom_wives_folder, _full_path);
+                                        pm_registry_add(_full_path);
                                         ds_list_add(wife_selector_names, _file);
                                         var _legacy_has_deep = file_exists(_full_path + "/custom_deepthroat.png");
                                         ds_list_add(wife_selector_has_cowgirl, _legacy_has_deep);
@@ -829,6 +889,7 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                                         custom_wife_sprite_loaded = true;
                                         show_debug_message("loaded custom wife");
                                         ds_list_add(custom_wives_folder, _full_path);
+                                        pm_registry_add(_full_path);
                                         ds_list_add(wife_selector_names, _file);
                                         var _w_has_cowgirl = file_exists(_full_path + "/custom_wife_cowgirl_0.png");
                                         ds_list_add(wife_selector_has_cowgirl, _w_has_cowgirl);
@@ -884,6 +945,7 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                     {
                         var _pm_csrc = [_pm_rd];
                         var _pm_cdst = [_pm_save + "/custom_bedrooms/" + _pm_rname];
+                        pm_registry_add(_pm_cdst[0]);
                         var _pm_ci = 0;
                         while (_pm_ci < array_length(_pm_csrc))
                         {
@@ -950,6 +1012,7 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                                     directory_create(_pm_save + "/dialogue_packs");
                                 }
                                 file_copy(_pm_rd + "/" + _pm_en, _pm_save + "/dialogue_packs/" + _pm_en);
+                                pm_registry_add(_pm_save + "/dialogue_packs/" + _pm_en);
                                 _pm_dlg++;
                             }
                             else if (string_copy(_pm_el, string_length(_pm_el) - 3, 4) == ".png")
@@ -973,6 +1036,7 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                             }
                             var _pm_csrc = [_pm_rd];
                             var _pm_cdst = [_pm_save + "/phone_voices/" + _pm_rname];
+                            pm_registry_add(_pm_cdst[0]);
                             var _pm_ci = 0;
                             while (_pm_ci < array_length(_pm_csrc))
                             {
@@ -1031,6 +1095,7 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                     {
                         var _pm_csrc = [_pm_tsrc[_pm_t]];
                         var _pm_cdst = [_pm_tdst[_pm_t]];
+                        pm_registry_add(_pm_cdst[0]);
                         var _pm_ci = 0;
                         while (_pm_ci < array_length(_pm_csrc))
                         {
