@@ -605,7 +605,7 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
 }
 if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog == -1 && pm_http == -1 && mouse_check_button_pressed(mb_left) && point_in_rectangle(mouse_x, mouse_y, room_width - 150, room_height - 46, room_width - 10, room_height - 18))
 {
-    pm_dialog = get_string_async("Paste the link to a mod .zip (it must start with https://)", "");
+    pm_dialog = get_string_async("Add a mod: paste an https:// link to a .zip, or the path of a .zip / .json on this phone (e.g. /sdcard/Download/mod.zip). Tip: you can also Share a file to this game from your file manager.", "");
     mouse_clear(mb_left);
 }
 if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog == -1 && pm_http == -1)

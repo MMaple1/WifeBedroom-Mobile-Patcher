@@ -71,6 +71,8 @@ The signed APK is written to **`output/`**. If any mod packs were left out, a re
 
 Builds include an Android activity (`wbmods.PhoneImportActivity`) that accepts a shared `.zip` or `.json` mod and stores it in the app's `files/phone_inbox/` folder before reopening the game (turn it off with option 7 of the custom install). It has not been tested on a device, and whether the game then imports from that folder is unverified.
 
+**Adding a mod on the phone** (Deeproom builds, title screen button): the dialog accepts either an `https://` link to a `.zip`, or the path of a `.zip` / `.json` on the phone, such as `/sdcard/Download/mod.zip`, `/storage/emulated/0/Download/mod.zip` or a `file://` link (spaces in the path are fine). A local file is copied into `phone_inbox/` and imported the same way as a shared file. Android 11 and later usually block apps from reading other folders directly; the dialog then says so, and the reliable way is to open your file manager, long-press the file and **Share** it (or **Open with**) to the game. A built-in file browser would need the source of `phone_import.dex`, which is not in this repository.
+
 ### 1. Touch controls
 
 What each engine gets differs. **Deeproom** has the full touch overlay below. **ModRoom v3.3** runs the PC game code with touch mapped to the mouse, plus touch-drag scrolling in its lists, a two-column pill menu with larger buttons, and background selection on release (no accidental room change while scrolling); it has no drawer or touch-and-hold menu. **Wife's Bedroom v1.5** uses its own mobile interface.
