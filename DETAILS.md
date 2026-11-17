@@ -25,7 +25,7 @@ Features differ across target engines:
   - Accidental tap protection: ignores background taps while menus or character cards are open.
   - Touch and hold: hold gesture triggers the radial menu in manual mode (right-click actions lacking on-screen buttons, like portrait changes or outfit toggles, may not yet be reachable via touch).
   - Drag to scroll: vertical dragging through character lists, pill selections, and bedroom lists (one row per drag step).
-  - Single-fire buttons: bedroom drawer buttons fire on touch release only if no drag occurred. Background list selects a room only if release is within 6 px of initial touch-down.
+  - Single-fire buttons: drawer buttons act once, on touch release, when the touch started in the drawer and did not scroll; a very quick tap counts too (fixed 2026-11-17: the buttons had stopped responding). Background list selects a room only if release is within 6 px of initial touch-down.
   - Single-finger gesture ownership: secondary touch inputs do not alter the active drag gesture.
   - Bedroom drawer: swipe or tap arrows to cycle custom backgrounds.
   - Climax scene protection: open menu dialogs automatically dismiss during climax scenes.
