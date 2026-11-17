@@ -369,6 +369,10 @@ if (ds_map_find_value(async_load, "id") == pm_http)
                         }
                         if (_pm_isvoice)
                         {
+                            if (!tc_dir_exists(_pm_save + "/phone_voices"))
+                            {
+                                directory_create(_pm_save + "/phone_voices");
+                            }
                             var _pm_csrc = [_pm_rd];
                             var _pm_cdst = [_pm_save + "/phone_voices/" + _pm_rname];
                             var _pm_ci = 0;

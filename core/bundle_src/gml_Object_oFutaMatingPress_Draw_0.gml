@@ -376,7 +376,11 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                     var _pk_dst = pm_pick_paths[_pk_hit];
                     if (string_pos(_pm_save, _pk_dst) != 1)
                     {
-                        var _pk_cut = string_pos("custom_futas/", _pk_dst);
+                        var _pk_cut = string_pos("phone_mods/", _pk_dst);
+                        if (_pk_cut <= 0)
+                        {
+                            _pk_cut = string_pos("custom_futas/", _pk_dst);
+                        }
                         if (_pk_cut > 0)
                         {
                             _pk_dst = _pm_save + "/" + string_copy(_pk_dst, _pk_cut, string_length(_pk_dst));
@@ -527,12 +531,12 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                 array_push(pm_pick_paths, _pm_dir);
                 array_push(pm_pick_kinds, 0);
             }
-            else if (_pm_depth < 4)
+            else if (_pm_depth < 8)
             {
                 var _pm_find = tc_ff_first(_pm_dir + "/*", 16);
                 while (_pm_find != "")
                 {
-                    if (_pm_find != "." && _pm_find != "..")
+                    if (_pm_find != "." && _pm_find != ".." && tc_dir_exists(_pm_dir + "/" + _pm_find))
                     {
                         array_push(_pm_queue, _pm_dir + "/" + _pm_find);
                         array_push(_pm_names, _pm_find);
@@ -963,6 +967,10 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                         }
                         if (_pm_isvoice)
                         {
+                            if (!tc_dir_exists(_pm_save + "/phone_voices"))
+                            {
+                                directory_create(_pm_save + "/phone_voices");
+                            }
                             var _pm_csrc = [_pm_rd];
                             var _pm_cdst = [_pm_save + "/phone_voices/" + _pm_rname];
                             var _pm_ci = 0;
