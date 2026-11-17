@@ -1925,7 +1925,7 @@ function func_load_custom_spouse(arg0)
     var _lcwx_fixed = false;
     if (file_exists(string(arg0) + "/custom_data.spouse") || file_exists(string(arg0) + "/custom_data.wife") || (os_type == os_android || os_type == os_ios))
     {
-        ini_open(string(arg0) + (file_exists(string(arg0) + "/custom_data.spouse") ? "/custom_data.spouse" : "/custom_data.wife"));
+        ini_open(string(arg0) + "/custom_data.spouse");  // native Deeproom: the spouse loader reads only .spouse
         sprite_origin_x = ini_read_real("sprite", "origin_x", 80);
         sprite_origin_y = ini_read_real("sprite", "origin_y", 84);
         portrait_origin_x = ini_read_real("portrait", "origin_x", 78);
@@ -2294,12 +2294,14 @@ function func_load_custom_wife(arg0, arg1 = 0)
         ini_open(string(arg0) + "/custom_data.wife");
         sprite_origin_x = ini_read_real("sprite", "origin_x", 80);
         sprite_origin_y = ini_read_real("sprite", "origin_y", 84);
-        cowgirl_origin_x = ini_read_real("sprite", "cowgirl_origin_x", ini_read_real("reverse_cowgirl", "origin_x", sprite_origin_x));
-        cowgirl_origin_y = ini_read_real("sprite", "cowgirl_origin_y", ini_read_real("reverse_cowgirl", "origin_y", sprite_origin_y));
-        mp_origin_x = ini_read_real("sprite", "mating_press_origin_x", ini_read_real("mating_press", "origin_x", sprite_origin_x));
-        mp_origin_y = ini_read_real("sprite", "mating_press_origin_y", ini_read_real("mating_press", "origin_y", sprite_origin_y));
-        dt_origin_x = ini_read_real("sprite", "deepthroat_origin_x", ini_read_real("deepthroat", "origin_x", sprite_origin_x));
-        dt_origin_y = ini_read_real("sprite", "deepthroat_origin_y", ini_read_real("deepthroat", "origin_y", sprite_origin_y));
+        // Native Deeproom: the .wife loader reads only the flat [sprite] keys. Packs are tuned against that, so the
+        // spouse-style [mating_press]/[reverse_cowgirl]/[deepthroat] sections many packs also carry are NOT used here.
+        cowgirl_origin_x = ini_read_real("sprite", "cowgirl_origin_x", sprite_origin_x);
+        cowgirl_origin_y = ini_read_real("sprite", "cowgirl_origin_y", sprite_origin_y);
+        mp_origin_x = ini_read_real("sprite", "mating_press_origin_x", sprite_origin_x);
+        mp_origin_y = ini_read_real("sprite", "mating_press_origin_y", sprite_origin_y);
+        dt_origin_x = ini_read_real("sprite", "deepthroat_origin_x", sprite_origin_x);
+        dt_origin_y = ini_read_real("sprite", "deepthroat_origin_y", sprite_origin_y);
         portrait_origin_x = ini_read_real("portrait", "origin_x", 64);
         portrait_origin_y = ini_read_real("portrait", "origin_y", 64);
         custom_bottom_boob_size = ini_read_real("stats", "bottom_boob_size", 1);

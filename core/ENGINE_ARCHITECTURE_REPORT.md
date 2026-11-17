@@ -208,7 +208,7 @@ game_root/
 Sources: native `data.win` of ModRoom V3.3, Deeproom 4.0.3 and Wife's Bedroom v1.5 (code dumped with UndertaleModCli), each game's templates and readme, the PNG widths of every example folder, the shipped Deeproom bundle and `wbp/packs.py`. Nothing was tested on a device.
 
 **Confirmed**
-- Section 3 frame counts. Measured strip widths (frames = width / 160 px): futa portrait 10 (standard) / 17 (`_0`), futa mating press 9 / 24, futa X-ray 3 / 18, wife portrait 10 / 17, wife mating press 4 / 5, wife reverse cowgirl 5 / 10, wife X-ray 4 / 3, wife forward cowgirl 11. Deepthroat is 5 frames for wives and 9 for futas.
+- Section 3 frame counts. Measured strip widths (frames = width / 160 px for the usual 160 px frames; corrected 2026-11-17: the games cut a strip into a fixed NUMBER of frames whatever its width, so high-res packs with 256 px portraits or 220 px mating-press frames are valid, and portrait frames are usually 128 px): futa portrait 10 (standard) / 17 (`_0`), futa mating press 9 / 24, futa X-ray 3 / 18, wife portrait 10 / 17, wife mating press 4 / 5, wife reverse cowgirl 5 / 10, wife X-ray 4 / 3, wife forward cowgirl 11. Deepthroat is 5 frames for wives and 9 for futas.
 - v1.5's partner format equals Deeproom's legacy **spouse** format (standard names; 4/10/5/5/4 frames; `.spouse`). v1.5's lover format equals the legacy futa format (10/9/3/2).
 
 **Needs correction**
@@ -253,6 +253,7 @@ Verified from the native `data.win` code of each game (UndertaleModCli dump of `
 
 Notes:
 - ModRoom's native wife loader has no `.spouse` branch. Deeproom has two partner loaders, chosen by file presence (see section 8). v1.5 patched by this tool also accepts `.wife`.
+- Patched Deeproom bundle (2026-11-17): sprite origins are read exactly as in the native game (packs are tuned against it); only X-ray origins may be replaced by measured ones (install option). The lover loader uses the standard names when `custom_mating_press.png` exists or `custom_futa_mating_press_0.png` is missing (the same rule on PC and phone; an earlier patch had forced the standard-name loader on Android); select-screen and in-game portraits use the same choice, with 10 or 17 frames picked by which count divides the width.
 - A v1.5 partner pack and a Deeproom legacy spouse pack are the same format (standard names; 4/10/5/5/4 frames). ModRoom's wife format is Deeproom's modern wife format.
 - Deeproom's patched bundle also accepts v1.5's `[sprite] xray_x/xray_y` for the X-ray origin, as a fallback: since 2026-11-16 `[xray] origin_x/y` (the native Deeproom key) is read first. See section 11.
 

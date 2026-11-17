@@ -55,7 +55,7 @@ The tool also looks for a matching APK next to `WB_Mobile_Patcher.bat` itself.
 
 1. Put your base APK (e.g. `wifes_bedroom1_4.apk`) in the `input/` folder.
 2. Drag your mod folder (e.g. `Deeproom 4.0.3`) or mod `.zip` onto **`WB_Mobile_Patcher.bat`**.
-3. Press **Enter** to accept the recommended *Default Installation*. A few short yes/no questions follow (skip duplicate packs, clean old builds, fast packaging, toy integration); pressing **Enter** on each accepts the default.
+3. Press **Enter** to accept the recommended *Default Installation*. A few short yes/no questions follow (skip duplicate packs, align X-ray overlays, clean old builds, fast packaging, toy integration); pressing **Enter** on each accepts the default. Long steps show a progress bar or a spinner with the elapsed time.
 
 The signed APK is written to **`output/`**. If any mod packs were left out, a report named `<apk name>_skipped_packs.md` is written next to it.
 
@@ -102,6 +102,8 @@ What each engine gets differs. **Deeproom** has the full touch overlay below. **
 Before building, the tool checks your mod packs:
 
 - **Incompatible packs** are skipped, with the reason in the report: no `custom_data.futa/.wife/.spouse/.bedroom` file; a numbered `custom_data_1.futa` file; partner sprites in a lover folder or the reverse; ModRoom-format `_0.png` names in a v1.5 build (v1.5 cannot read them); and, for ModRoom, a pack that lacks a sprite ModRoom needs (lover: portrait, mating press, cowgirl, X-ray; partner: mating press, forward cowgirl, reverse cowgirl; a partner that has only a reverse cowgirl gets it copied, padded, as the forward one), because ModRoom would list it and then fail when the missing sprite is drawn.
+- **Deeproom packs the game would show cut up** are skipped too: the game cuts every strip into a fixed number of frames, so a strip whose width does not divide into that number (for example a 1412 px portrait, which must be 10 or 17 frames) shows off-centre frames; a partner without a portrait is also skipped. Frame width itself does not matter (high-res packs with 256 px portraits are fine), and condom strips are not checked.
+- **X-ray overlays** (Deeproom, option asked right after the duplicate question, default Yes, `--no-xray-origins` to turn it off): each pack's X-ray is measured against its own mating-press sprite, and where it would be drawn off-centre a corrected origin is written into the copy of the descriptor inside the APK (your mod folder is not changed). The packs adjusted are listed in `output/<apk>_xray_origins.txt`.
 - **Duplicates** are found in three tiers: matching folder or `[info]` names, identical key art (SHA-256 of portraits, mating sheets, backgrounds, audio, dialogue), then a score that keeps the best copy (correct category for the engine, more content, not named "Copy"/"(2)"/"_old").
 
 Skipped packs are simply **left out of the APK. Your mod folder is not changed: nothing is moved or deleted.** Each build that skips anything writes two files next to the APK:
@@ -137,6 +139,7 @@ Off by default; the tool asks before adding any telemetry code. The game-code pa
 | `output/quarantine/<date-time>/` | Only with `--move-skipped` |
 | `output/<apk>_patch_report.txt` | Only when some patch anchors were not found in the game build (usually harmless; see the technical specification) |
 | `output/<apk>_format_notes.txt` | Only when packs were renamed between the ModRoom (`_0.png`) and standard names, or a v1.5 build holds ModRoom-format packs it cannot read; the two formats cut animation frames differently, so check those characters in game |
+| `output/<apk>_xray_origins.txt` | Deeproom builds with X-ray alignment on: packs whose X-ray origin was adjusted (old and new origin) |
 | `patch_overlay_latest_error.log` | Details of the last failed build (next to the `.bat`) |
 
 `--clean` removes old `.apk` and `.idsig` files from `output/` before building; base backups (`.bak`) are kept.
@@ -148,7 +151,7 @@ Off by default; the tool asks before adding any telemetry code. The game-code pa
 ```text
 usage: WB_Mobile_Patcher.py [-h] [-b BASE_APK] [-o OUTPUT] [-y] [--clean] [--fast]
                             [--validate-only] [--quarantine-duplicates] [--approximate] [--move-skipped]
-                            [--no-quarantine-duplicates]
+                            [--no-quarantine-duplicates] [--no-xray-origins]
                             [--toy-integration {y,n}] [--toy-mode {direct,bridge,all,none}]
                             [--toy-profile {default,easy,mid,hard,mideasy,midhard}]
                             [--toy-lead {0,50,100,150,200,250,300,400,500}]
@@ -169,6 +172,7 @@ Options:
                             in output/<mod>_validation.md. Builds nothing, moves nothing
   --quarantine-duplicates   Skip duplicate packs (this is the default)
   --no-quarantine-duplicates Keep every copy of duplicate packs
+  --no-xray-origins     Deeproom: do not align X-ray overlays with the character sprites
   --approximate             Also convert sprite strips whose frame count must drop frames when bridging ModRoom (_0.png) and
                             standard names (default: lossless padding only; other strips are renamed unchanged and listed)
   --move-skipped            Also move skipped packs to output/quarantine/<date-time>/ (never deletes)
@@ -202,7 +206,7 @@ Options:
 | `wbp/engines.py` | ModRoom v3.3 and Wife's Bedroom v1.5 bytecode patchers, variable shield |
 | `wbp/gml_patches.py` | the dynamic (fallback) GML patchers |
 | `wbp/toy.py`, `wbp/toy_native.py` | ToyBridge / telemetry integration; `toy_native.py` applies the toy game-code patches (snippets in `core/gml_patches/native_toy/`) |
-| `wbp/wbconv.py` | strip padding/cropping and name rules shared with the two converters (an identical copy; `python tools/sync_wbconv.py` keeps the copies equal) |
+| `wbp/wbconv.py` | strip padding/cropping and name rules shared with the two converters (one of four identical copies: both converters, this tool and the Custom Studio backend; `python tools/sync_wbconv.py` keeps them equal, `--check` only reports) |
 | `wbp/apk.py` | repackaging, signing, `patch_game_apk()` |
 | `wbp/cli.py` | prompts and `main()` |
 

@@ -4,6 +4,19 @@ All notable changes to the **WB Mobile Patcher** tool are documented in this fil
 
 ---
 
+## [Version 1.2.1] - 2026-11-17
+
+### Highlights
+- **Deeproom lover loading on phones.** The bundle used to send every lover with a `custom_data.futa` (and every lover on Android) to the standard-name loader, so packs with only ModRoom-style `_0.png` files showed a 17-frame portrait cut into 10 and kept the previous character's sprites. The loader is now chosen as in the PC game: standard names when `custom_mating_press.png` exists or there is no `custom_futa_mating_press_0.png`, otherwise the `_0.png` loader.
+- **Portraits load correctly everywhere.** The select screen (all seven places that load a preview) uses the same choice of file as the game. A portrait is 10 or 17 frames, picked by which count divides its width, so high-res portraits (256 px frames) and 10-frame strips saved under `_0` names both load. Every character switch clears both portrait slots and sets the portrait scale, so a previous character's portrait can no longer stay on screen (seen when switching from a standard-name lover to a modern one).
+- **Packs the game would cut up are skipped** (Deeproom pre-flight): strips that do not divide into the frame count their loader uses, and partners without a portrait. Listed in the skipped-packs report.
+- **X-ray overlay alignment** (new install option, default Yes; `--no-xray-origins`): X-rays drawn off-centre, usually because the X-ray origin was copied from a wide mating-press canvas, get a measured origin in the APK copy of the descriptor. `output/<apk>_xray_origins.txt` lists them.
+- **Sprite origins stay as in the native game**: the partner loaders read the same origin keys as native Deeproom (an earlier change that also read the spouse-style `[deepthroat]` / `[mating_press]` / `[reverse_cowgirl]` sections in the `.wife` loader moved deepthroat sprites and was reverted). Only X-ray origins are adjusted, and only with the X-ray alignment option.
+- **Adding a mod on the phone** accepts the path of a `.zip` / `.json` on the phone as well as an `https://` link.
+- **Progress bars and spinners** for the pack check, duplicate scan, X-ray alignment and engine compile.
+- `wbp/wbconv.py`: strips convert at any frame width; `tools/sync_wbconv.py` now keeps four copies identical (both converters, this tool, the Custom Studio).
+- Not tested on a device.
+
 ## [Version 1.2.0] - 2026-11-16
 
 ### Highlights
