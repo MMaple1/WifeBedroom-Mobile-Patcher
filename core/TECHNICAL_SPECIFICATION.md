@@ -1141,6 +1141,8 @@ if (futa_selector_open == false)
 
 Source: `bundle_src/gml_Object_oFutaMatingPress_Draw_0.gml`
 
+**Drawer button taps (2026-11-17).** One touch is tracked (`mob_touch_dev`); `_mob_touch_p`, `_mob_touch_d` and `_mob_touch_r` record press, hold and release for it, and a tap that is pressed and released in the same frame counts as a release too. A press inside the open drawer sets `global.mob_touching_menu`; a vertical move of more than 6 px makes it a scroll (`mob_is_dragging`). A button acts once, on release, when the release lands on it, the press started in the drawer and the finger did not scroll (`_click_occurred`). The flag is created once with `variable_global_exists("mob_touching_menu")`; an earlier guard checked it as an instance variable, which is never true, reset the flag every frame and left every drawer button unresponsive (fixed 2026-11-17; `tests/test_bundle_lint.py` rejects that pattern).
+
 ---
 
 ### 24. [DR-24] [Deeproom Mobile Custom] Single-Trigger Overlay Action Execution
