@@ -162,15 +162,16 @@ For downstream modders and engine maintainers integrating these features directl
 
 ### 1. File: `gml_Object_oFutaMatingPress_Create_0`
 Open this script once to integrate all lifecycle, scaling, and initialization subsystems:
+- **Phone mods registry**: `pm_registry_read/write/add/remove` keep `<save>/phone_mods_registry.txt`, the list of everything phone imports created (see the phone-mods paragraph under section 31).
 - **Variable Initializations**: Define `boob_box = false;`, `cowgirl_origin_y = 84;`, `selector_favs_only = false;`, `global.favs_futa = ds_map_create();` upfront.
 - **`[DR-01]`**: Ingest `custom_futas/_manifest.txt` and `custom_wives/_manifest.txt` inside scanner functions.
 - **`[DR-02]`**: Define `tc_norm_path(path)` leading-slash normalizer.
 - **`[DR-05]`**: Ingest and save settings in `setting_data.sav` and `func_save_settings()`.
-- **`[DR-06]`**: Dynamic multi-frame slicer and `160 / frame_w` scale normalization in `func_load_custom_futa()`.
+- **`[DR-06]`**: Dynamic multi-frame slicer and `160 / frame_w` scale normalization in `func_load_custom_futa()`. `func_futa_pack_is_legacy()` chooses the loader, the same on PC and phone: standard names when `custom_mating_press.png` exists or `custom_futa_mating_press_0.png` is missing, otherwise the `_0.png` loader.
 - **`[DR-07]`**: Out-of-bounds frame guards in `func_get_futa_frame()`.
 - **`[DR-08]`**: Disentangle `func_ovulate()` from `func_wife_climax()`.
 - **`[DR-09]`**: Initialize default `xray_origin_x = 80; xray_origin_y = 84;` in `func_load_custom_spouse()`.
-- **`[DR-12]`**: Reset `legacy_custom_portrait = -1` when loading characters lacking portrait PNGs.
+- **`[DR-12]`**: Every character switch clears both portrait slots (`custom_portrait` and `legacy_custom_portrait`, and the two partner slots) and sets the portrait scale, so no previous portrait can stay on screen.
 - **`[TB-03]`**: Add touch drag accumulator (one row per 64 px of drag) in the UI update logic.
 - **`[TB-07]`**: Initialize `buttplug_socket = network_create_socket(network_socket_tcp)` and protocol handshake.
 - **`[DR-29]`**: Add `check_custom_wife(path)` universal ModRoom and Legacy format validator.
@@ -186,7 +187,7 @@ Open this script to integrate all rendering, UI modal gating, and touch controls
 - **`[DR-16]`**: Card click isolation guard (`!_star_hover`) preventing accidental equipping when toggling bookmarks.
 - **`[DR-17]`**: Geometric vector star badge with immediate write/delete in `setting_data.sav`.
 - **`[DR-18]`**: Modal input suppression on background buttons during CSS display.
-- **`[DR-19]`**: Prioritized `[FAV: ALL/ON]` filter header layout on the left with touch precedence.
+- **`[DR-19]`**: Selector header: search bar on the left, `[FAV: ALL/ON]` filter button on the right, with touch precedence.
 - **`[DR-20]`**: Mobile virtual keyboard trigger (`keyboard_virtual_show`) and search filter handling.
 - **`[DR-21]`**: Mutually exclusive radar stat graphs bound strictly to active panels.
 - **`[DR-22]`**: Climax screen auto-closing forcing floating panels to hide.
@@ -215,7 +216,7 @@ Open this script to integrate all rendering, UI modal gating, and touch controls
 ### 6. Android Platform Packaging Layer
 - **`[TB-05]`**: Bundle `phone_import.dex` containing `wbmods.PhoneImportActivity` as secondary DEX.
 - **`[DR-27]`**: Binary AXML injection into `AndroidManifest.xml` registering the import activity.
-- **`[DR-28]`**: Pre-flight pack checks via `classify_custom_pack` to prevent runtime crashes.
+- **`[DR-28]`**: Pre-flight pack checks via `classify_custom_pack`, `missing_sprites` and, for Deeproom, `deeproom_strip_problems` (strips that do not divide into their loader's frame count, partners without a portrait) to prevent runtime crashes and cut-up sprites.
 
 ---
 
@@ -225,20 +226,20 @@ Open this script to integrate all rendering, UI modal gating, and touch controls
 
 | Variable Name | Scope | Defined In | Default Value | Architectural Function |
 | :--- | :--- | :--- | :--- | :--- |
-| `custom_mating_press_scale` | Instance | `Create (0)` | `1.0` | Normalization scale factor ($160 / \text{frame\_w}$) for partner sprites. |
-| `global.favs_futa` | Global | `Create (0)` | `ds_map_create()` | Map containing names of bookmarked custom partners. |
+| `custom_mating_press_scale` | Instance | `Create (0)` | `1.0` | Normalization scale factor ($160 / \text{frame\_w}$) for the lover's mating-press sprite. |
+| `global.favs_futa` | Global | `Create (0)` | `ds_map_create()` | Map containing names of bookmarked custom lovers. |
 | `global.favs_wife` | Global | `Create (0)` | `ds_map_create()` | Map containing names of bookmarked custom spouses. |
 | `selector_favs_only` | Instance | `Create (0)` | `false` | Boolean toggle filtering CSS grid to show only starred cards. |
 | `_sel_jump_done` | Instance | `Draw (0)` | `false` | One-shot latch ensuring CSS only auto-scrolls once per menu opening. |
 | `boob_box` | Instance | `Create (0)` | `false` | Safety initialization preventing early uninitialized variable lookups. |
 | `cowgirl_origin_y` | Instance | `Create (0)` | `84` | Default vertical origin coordinate. |
-| `tc_hyper` | Instance | `Create (0)` | `false` | SIZES options page multiplier expanding slider limits. |
+| `tc_hyper` | Instance | `Create (0)` | `false` (true when `hyper_sizes.on` exists in the save folder) | SIZES options page multiplier expanding slider limits. |
 | `mob_expanded` | Instance | `Create (0)` | `false` | Toggle state for the mobile floating action drawer menu. |
 | `mob_lp_timer` | Instance | `Create (0)` | `0` | Touch-hold frame counter used to synthesize right-clicks. |
 | `selector_search_focused`| Instance | `Create (0)` | `false` | Tracks whether the CSS search bar is focused. |
 | `buttplug_socket` | Instance | `Create (0)` | `-1` | TCP socket for Intiface Central WebSocket communication. |
 | `xray_origin_x` / `xray_origin_y` | Instance | `Create (0)` | `80` / `84` | X-ray overlay origin for custom spouses. |
-| `custom_condom_scale` | Instance | `Create (0)` | `1` | Condom sprite scale, matched to partner scale. |
+| `custom_condom_scale` | Instance | `Create (0)` | `1` | Condom sprite scale, matched to the lover's scale. |
 | `offset_panel_open` | Instance | `Create (0)` | `false` | Whether the in-game offset calibration panel is open. |
 
 ---
@@ -251,7 +252,7 @@ Open this script to integrate all rendering, UI modal gating, and touch controls
 - **Target Event**: `Create (0)`
 - **Anchor**: `tc_ff_first` and `tc_ff_next` implementations
 
-Bypasses slow, blocking filesystem loops by streaming newline-delimited text manifests (`_manifest.txt`) into memory. This replaces the file walking on mobile platforms (the manifest-less fallback still walks the folder) to prevent ANR timeouts.
+Bypasses slow, blocking filesystem loops by streaming newline-delimited text manifests (`_manifest.txt`) into memory. This replaces the file walking on mobile platforms (the manifest-less fallback still walks the folder) to prevent ANR timeouts. Exception (2026-11-17): folders inside the game's own save folder (`tc_is_save_path`), which the game creates on the phone and which have no `_manifest.txt`, are listed with `file_find_first`. The same functions also exist in `oFutaMatingPress`.
 
 ```gml
     var _pat = string_lower(string_delete(_m, 1, _cut));
@@ -292,7 +293,7 @@ Source: bundle_src/gml_Object_oBackground_Create_0.gml, tc_ff_first; wbp/gml_pat
 - **Target Event**: `Create (0)`
 - **Anchor**: Function definition `tc_norm_path(arg0)`
 
-Strips leading slashes and normalizes double-slashes for Android and iOS runtimes to prevent asset lookup failures.
+Normalizes double slashes and, on Android and iOS, strips leading slashes so asset paths resolve. Paths inside the game's save folder (`game_save_id`, checked by `tc_is_save_path`) keep their leading slash, because they are absolute (`/data/user/0/<app>/files/...`). The same function also exists in `oFutaMatingPress`.
 
 ```gml
 function tc_norm_path(arg0)
@@ -407,7 +408,7 @@ function func_scan_custom_backgrounds()
     bg_menu.scroll_lerp = lerp(bg_menu.scroll_lerp, bg_menu.scroll, 0.35);
 ```
 
-Source: gml_patches/patch_background_code/new_bg_scan.gml, func_scan_custom_backgrounds; bundle_src/gml_Object_oFutaMatingPress_Draw_0.gml
+Source: bundle_src/gml_Object_oBackground_Create_0.gml, func_scan_custom_backgrounds; bundle_src/gml_Object_oFutaMatingPress_Draw_0.gml; fallback core/gml_patches/patch_background_code/new_bg_scan.gml
 
 
 ### 5. [DR-05] [Deeproom Mobile Custom] Sandboxed Storage & Persistent Session Redirection (setting_data.sav)
@@ -507,7 +508,7 @@ In `func_load_custom_futa`, custom character assets initialize default origin co
             var draw_y_base = y - (thrust * 32);
 ```
 
-When loading wife assets in `func_load_custom_spouse`, custom portrait dimensions are dynamically scaled relative to a 128px baseline (`custom_wife_portrait_scale = 128 / _wpw`), while custom mating press sheets are loaded with specified frame counts and origins:
+Portraits are scaled to a 128 px frame (`... _scale = 128 / width`) in every portrait loader (lover and partner, standard and modern; 2026-11-17). In `func_load_custom_spouse`, for example, `custom_wife_portrait_scale = 128 / _wpw`, while custom mating press sheets are loaded with specified frame counts and origins:
 
 ```gml
     var f_mate = string(arg0) + "/custom_mating_press.png";
@@ -605,7 +606,7 @@ function func_wife_climax()
 // ...
 ```
 
-Source: bundle_src/gml_Object_oFutaMatingPress_Create_0.gml, func_wife_climax; gml_patches/patch_create_code/old_climax_ov.gml
+Source: bundle_src/gml_Object_oFutaMatingPress_Create_0.gml, func_wife_climax; core/gml_patches/patch_create_code/old_climax_ov.gml
 
 ---
 
@@ -613,9 +614,9 @@ Source: bundle_src/gml_Object_oFutaMatingPress_Create_0.gml, func_wife_climax; g
 
 - **Target Object**: `oFutaMatingPress`
 - **Target Event**: `Create (0)`
-- **Anchor**: Inside `func_load_custom_spouse(folder, alt)`
+- **Anchor**: Inside `func_load_custom_spouse(arg0)`
 
-When loading custom spouse sprites, the X-ray origin defaults to coordinates (80, 84). The loader opens `custom_data.spouse` (as in the native game). The origin is read from `[xray] origin_x/y`, then `[sprite] xray_x/y`, and clamped to 40..120. If `custom_xray.png` is found, the 4-frame sprite is added and its offset recalculated if the sprite width differs from the 160px baseline.
+When loading custom spouse sprites, the X-ray origin defaults to coordinates (80, 84). The loader opens `custom_data.spouse` only, as in the native game; the modern `.wife` loader reads only the flat `[sprite]` keys. (A fallback between the two layouts was tried on 2026-11-17 and reverted: packs are tuned against the native game.) The origin is read from `[xray] origin_x/y`, then `[sprite] xray_x/y`, and clamped to 40..120. If `custom_xray.png` is found, the 4-frame sprite is added and its offset recalculated if the sprite width differs from the 160px baseline.
 
 **Measured origin (2026-11-17).** Install option "Align X-ray overlays" (asked right after the duplicate prompt, default Yes; `--no-xray-origins` turns it off). When on, for Deeproom builds the patcher measures frame 0 of every partner and lover X-ray strip and compares it with the pack's own mating-press sprite (partner: frame 0; lover: frame 7). Across the library the X-ray centre lines up with the sprite centre (p10..p90 within 0.5 px), and the bottom edge of a partner X-ray sits +70 px below the origin. An adjustment is made only when the library measure and the pack's own sprite agree that the X-ray is off, in the same direction (x by more than 4 px; y by more than 6 px, partners only: the lover's vertical reference is unreliable, so lover heights are never changed). Rows and columns with fewer than 3 opaque pixels are ignored (stray pixels), and a frame 0 wider than 110 px or taller than 170 px is not treated as a plain X-ray overlay. The result is written as `[xray] mobile_origin_x/y` into the APK copy of the descriptor (`wbp/descriptors.py`, `_deeproom_xray_origins`; Pillow is used when installed, otherwise the standard-library PNG reader; the pack's files are not changed; a list is written to `output/<apk>_xray_origins.txt`). All four X-ray loaders (spouse, modern wife, legacy lover, modern lover) then use that origin exactly (no clamp, no rescale), and Draw (0) no longer resets a partner X-ray that has one (`wife_xray_fixed_offset`). Typical cause: the X-ray origin was copied from the mating-press origin (100-120 for wide mating-press canvases) although the X-ray strips use standard 160 px frames, which drew the X-ray 20-40 px off-centre. On the 2026-11 library: 45 partners and 2 lovers adjusted.
 
@@ -675,11 +676,11 @@ If custom portrait art is uninitialized or absent, drawing unconditionally using
     comment = "layer 1: torso";
     draw_sprite_ext(_lover_base_portrait, 1, portrait_x, portrait_y + (top_breath * 64), 1 * custom_portrait_scale, 1 * custom_portrait_scale, 0, top_skin, 1);
 ```
-Source: code/gml_patches/patch_draw_code/new_lpe.gml
+Source: core/gml_patches/patch_draw_code/new_lpe.gml
 
 ---
 
-### 11. [DR-11] [Deeproom Mobile Custom] Non-Negative Sprite Shield & Condom/X-ray Fallbacks
+### 11. [DR-11] [Deeproom Mobile Custom] Strict Custom Selection (`enforce_strict_custom_selection`)
 
 - **Target Object**: Patcher Engine
 - **Target Event**: Patch Injection
@@ -697,7 +698,7 @@ Applies GML replacements for strict custom selection, including replacing `old_w
 
     code = guarded_replace(code, old_swap_click, new_swap_click, "enforce_strict_custom_selection:old_swap_click")
 ```
-Source: code/wbp/gml_patches.py, enforce_strict_custom_selection
+Source: wbp/gml_patches.py, enforce_strict_custom_selection
 
 ---
 
@@ -707,7 +708,7 @@ Source: code/wbp/gml_patches.py, enforce_strict_custom_selection
 - **Target Event**: `Create (0)`
 - **Anchor**: `func_load_custom_futa`
 
-When loading custom futa data in `func_load_custom_futa`, portrait file paths are checked sequentially. Existing portrait sprites with an index above 189 are deleted before adding the new portrait sprite.
+When loading custom futa data in `func_load_custom_futa`, portrait file paths are checked sequentially. Since 2026-11-17 every lover and partner loader first clears BOTH portrait slots of its role (`custom_portrait` and `legacy_custom_portrait`; for partners `custom_wife_portrait` and `legacy_custom_wife_portrait`; sprites with an index of 189 or less are built-in and never deleted), loads the new portrait with 10 or 17 frames chosen by `func_portrait_frames` (whichever divides the width) and sets the portrait scale to 128 / frame width. Before this, switching from a standard-name lover to a modern one left the old portrait on screen.
 
 ```gml
             f_port = string(arg0) + "/custom_portrait.png";
@@ -728,7 +729,7 @@ When loading custom futa data in `func_load_custom_futa`, portrait file paths ar
                 }
                 legacy_custom_portrait = sprite_add(f_port, 10, false, false, portrait_origin_x, portrait_origin_y);
 ```
-Source: code/bundle_src/gml_Object_oFutaMatingPress_Create_0.gml, func_load_custom_futa
+Source: bundle_src/gml_Object_oFutaMatingPress_Create_0.gml, func_load_custom_futa
 
 ---
 
@@ -738,7 +739,7 @@ Source: code/bundle_src/gml_Object_oFutaMatingPress_Create_0.gml, func_load_cust
 - **Target Event**: `Draw (0)`
 - **Anchor**: Lazy thumbnail loader injection
 
-Dynamic thumbnail creation attempts to load 10 frames from preview images; if invalid, it measures image dimensions using a single-frame sprite to calculate frame aspect ratio and re-adds the sprite with the derived frame count.
+Selector thumbnails are loaded through `func_futa_selector_portrait()` / `func_wife_selector_portrait()`: they pick the portrait file the character's loader will use and take 10 or 17 frames, whichever divides the strip width (`func_portrait_frames`), so high-res (256 px) portraits and 10-frame strips saved under `_0` names both load.
 
 ```gml
                     else if (file_exists(_pb))
@@ -757,7 +758,7 @@ Dynamic thumbnail creation attempts to load 10 frames from preview images; if in
                             }
                         }
 ```
-Source: code/gml_patches/inject_lazy_thumbnails_into_draw/new_loader.gml
+Source: core/gml_patches/inject_lazy_thumbnails_into_draw/new_loader.gml
 
 ---
 
@@ -787,7 +788,7 @@ var _max_scroll = max(0, _total_content_w - room_width);
         }
     }
 ```
-Source: code/gml_patches/inject_virtual_keyboard_and_search/new_max_scroll_def.gml
+Source: core/gml_patches/inject_virtual_keyboard_and_search/new_max_scroll_def.gml
 
 ---
 
@@ -795,7 +796,7 @@ Source: code/gml_patches/inject_virtual_keyboard_and_search/new_max_scroll_def.g
 
 - **Target Object**: `oFutaMatingPress`
 - **Target Event**: `Draw (0)`
-- **Anchor**: Line ~21245
+- **Anchor**: the `_is_equipped` check in the selector draw code
 
 Draws a semi-transparent pulsing gold rectangle and star title header for the currently equipped partner item within the selector card rendering loop.
 
@@ -819,7 +820,7 @@ Draws a semi-transparent pulsing gold rectangle and star title header for the cu
             draw_set_color(_border_col);
             draw_rectangle(_cx - 2, _cy - 2, _cx + _cell_w + 2, _cy + _cell_h + 2, true);
 ```
-Source: code/bundle_src/gml_Object_oFutaMatingPress_Draw_0.gml, oFutaMatingPress Draw
+Source: bundle_src/gml_Object_oFutaMatingPress_Draw_0.gml, oFutaMatingPress Draw
 
 ---
 
@@ -887,7 +888,7 @@ Evaluates point collisions for the favorite star toggle button separately. Tappi
             comment = "hover detection — highlight and record name";
             var _cell_hover = point_in_rectangle(mouse_x, mouse_y, _cx, _cy, _cx + _cell_w, _cy + _cell_h) && !_star_hover;
 ```
-Source: code/bundle_src/gml_Object_oFutaMatingPress_Draw_0.gml, oFutaMatingPress Draw
+Source: bundle_src/gml_Object_oFutaMatingPress_Draw_0.gml, oFutaMatingPress Draw
 
 
 ### 17. [DR-17] [Deeproom Mobile Custom] CSS Geometric Vector Star Badges, Silent Click Isolation & Dynamic Filter
@@ -898,62 +899,7 @@ Source: code/bundle_src/gml_Object_oFutaMatingPress_Draw_0.gml, oFutaMatingPress
 
 Draws 8-point geometric vector star badges on thumbnails without font atlas dependencies. Tapping the star executes `mouse_clear(mb_left);` to consume the click, toggling favorites silently without equipping the character or closing the menu:
 
-```gml
-            // Individual Thumbnail Favorite Star Button
-            var _star_w = 18;
-            var _star_h = 18;
-            var _star_x1 = (_cx + _cell_w) - _star_w;
-            var _star_y1 = _cy;
-            var _star_x2 = _cx + _cell_w;
-            var _star_y2 = _cy + _star_h;
-
-            var _fav_map = (selector_mode == 0) ? global.favs_futa : global.favs_wife;
-            var _is_fav = ds_map_exists(_fav_map, _fname);
-
-            var _star_hover = point_in_rectangle(mouse_x, mouse_y, _star_x1 - 2, _star_y1 - 2, _star_x2 + 2, _star_y2 + 2);
-            if (os_type == os_android || os_type == os_ios)
-            {
-                if (point_in_rectangle(device_mouse_x(0), device_mouse_y(0), _star_x1 - 2, _star_y1 - 2, _star_x2 + 2, _star_y2 + 2))
-                {
-                    _star_hover = true;
-                }
-            }
-
-            draw_set_alpha(1);
-            draw_set_color(_is_fav ? make_color_rgb(255, 215, 0) : make_color_rgb(35, 35, 35));
-            draw_rectangle(_star_x1, _star_y1, _star_x2, _star_y2, false);
-            draw_set_color(_is_fav ? c_white : make_color_rgb(140, 140, 140));
-            draw_rectangle(_star_x1, _star_y1, _star_x2, _star_y2, true);
-
-            var _bcx = (_star_x1 + _star_x2) * 0.5;
-            var _bcy = (_star_y1 + _star_y2) * 0.5;
-            draw_set_color(_is_fav ? c_black : make_color_rgb(200, 200, 200));
-            draw_line_width(_bcx - 5, _bcy, _bcx + 5, _bcy, 2);
-            draw_line_width(_bcx, _bcy - 5, _bcx, _bcy + 5, 2);
-            draw_line_width(_bcx - 3, _bcy - 3, _bcx + 3, _bcy + 3, 2);
-            draw_line_width(_bcx - 3, _bcy + 3, _bcx + 3, _bcy - 3, 2);
-
-            if ((mouse_check_button_pressed(mb_left) || device_mouse_check_button_pressed(0, mb_left)) && _star_hover)
-            {
-                ini_open("setting_data.sav");
-                var _sec = (selector_mode == 0) ? "favs_futa" : "favs_wife";
-                if (_is_fav)
-                {
-                    ds_map_delete(_fav_map, _fname);
-                    ini_key_delete(_sec, _fname);
-                }
-                else
-                {
-                    ds_map_add(_fav_map, _fname, 1);
-                    ini_write_real(_sec, _fname, 1);
-                }
-                ini_close();
-                mouse_clear(mb_left);
-            }
-
-            comment = "hover detection — highlight and record name";
-            var _cell_hover = point_in_rectangle(mouse_x, mouse_y, _cx, _cy, _cx + _cell_w, _cy + _cell_h) && !_star_hover;
-```
+The code is the same as the excerpt in section 16 (star badges).
 
 Source: bundle_src/gml_Object_oFutaMatingPress_Draw_0.gml
 
@@ -1435,7 +1381,7 @@ if (mouse_check_button_pressed(1) && _tc_hh && title == false)
 // ...
 ```
 
-Source: code/gml_patches/apply_hyper_sizes/hyper_toggle.gml, hyper_toggle
+Source: core/gml_patches/apply_hyper_sizes/hyper_toggle.gml, hyper_toggle
 
 ---
 
@@ -1444,22 +1390,22 @@ Source: code/gml_patches/apply_hyper_sizes/hyper_toggle.gml, hyper_toggle
 - **Target Platform**: Android Dalvik / ART Runtime (`classes2.dex`)
 - **Package**: `wbmods.PhoneImportActivity`
 
-`patch_game_apk()` edits `AndroidManifest.xml` via `AxmlEditor.add_import_activity()` to register `wbmods.PhoneImportActivity` for handling VIEW, SEND, and SEND_MULTIPLE intents targeting `.zip` and `.json` mod archives. If registered successfully, `phone_import.dex` is injected into the target APK root as the next available DEX file (`classes2.dex`). Incoming archives are stored in the app-private `files/phone_inbox/` directory.
+`patch_game_apk()` edits `AndroidManifest.xml` via `AxmlEditor.add_import_activity()` to register `wbmods.PhoneImportActivity` for handling VIEW, SEND, and SEND_MULTIPLE intents targeting `.zip` and `.json` mod archives. If registered successfully, `phone_import.dex` is added to the target APK as the next free `classesN.dex` (usually `classes2.dex`) at root as the next available DEX file (`classes2.dex`). Incoming archives are stored in the app-private `files/phone_inbox/` directory.
 
 **Phone mods in the game (2026-11-17).** The title screen's ADD MOD dialog (`Other_63`) takes an `https://` link (downloaded with `http_get_file`) or a local `.zip` / `.json` path (`/sdcard/`, `/storage/emulated/0/`, `file://`), which is copied into `phone_inbox/`; the inbox check in Draw (0) imports it like a shared file. On Android, `tc_norm_path` keeps paths inside `game_save_id` absolute (`tc_is_save_path`), and `tc_ff_first` lists such folders with `file_find_first` instead of a `_manifest.txt`, because folders the game creates have no manifest. Each import also appends the packs, bedrooms, texture packs, voice packs and dialogue files it creates to `<save>/phone_mods_registry.txt` (`pm_registry_add`); the startup reload, the REMOVE MOD list and the VOICES list read it (`pm_registry_read`) besides scanning, and removing a mod drops it (`pm_registry_remove`). Remove searches up to 8 folder levels below `phone_mods/`; all imports create `phone_voices/` before copying a voice pack. Checked by `tests/test_phone_mods_registry.py`; not device-tested.
 
-Source: code/wbp/apk.py, patch_game_apk
+Source: wbp/apk.py, patch_game_apk
 
 ---
 
 ### 32. [DR-27] [Deeproom Mobile Custom] Pure Python Binary AXML Editor & APK DEX Bundling
 
 - **Target File**: `AndroidManifest.xml` (inside APK root)
-- **Module**: `AxmlEditor` in `code/wbp/axml.py`
+- **Module**: `AxmlEditor` in `wbp/axml.py`
 
 `AxmlEditor` directly parses and manipulates binary XML chunks in `AndroidManifest.xml` during APK patching without invoking external tools like `apktool` or `aapt2`. It appends required string pool entries, updates the resource map, injects `<activity>` and `<intent-filter>` elements into the `<application>` node, and verifies registration using `has_import_activity()`. Upon success, `patch_game_apk()` bundles `phone_import.dex` as the next available `classesN.dex` file in the APK package.
 
-Source: code/wbp/axml.py, AxmlEditor; code/wbp/apk.py, patch_game_apk
+Source: wbp/axml.py, AxmlEditor; wbp/apk.py, patch_game_apk
 
 ---
 
@@ -1485,7 +1431,7 @@ if (variable_instance_exists(id, "buttplug_socket") && buttplug_socket >= 0)
 }
 ```
 
-Source: code/gml_patches/patch_draw_code/bp_draw.gml, bp_draw
+Source: core/gml_patches/patch_draw_code/bp_draw.gml, bp_draw
 
 
 ### 34. [DR-28] [Deeproom Mobile Custom] Pre-Flight Mod Pack Classification & Quarantine Architecture
@@ -1494,6 +1440,7 @@ Source: code/gml_patches/patch_draw_code/bp_draw.gml, bp_draw
 - **Functions**: `classify_custom_pack()`, `plan_pack_skips()`, `write_skip_report()`, `move_skipped_packs()`
 
 Evaluates custom pack folders before ingestion to prevent APK build aborts or runtime crashes:
+0. Besides the checks below, `missing_sprites()` skips packs lacking a sprite the target engine needs, and for Deeproom `deeproom_strip_problems()` skips packs whose strips do not divide into the frame count their loader uses (or partners without a portrait).
 1. Numbered-Alt Check: Flags packs containing filenames matching `^custom_data_\d+\.(futa|spouse)$` (case-insensitive) as non-portable.
 2. Recognized Data File Check: Validates presence of recognized descriptor files (`custom_data.futa`, `custom_data.wife`, `custom_data.spouse`, `custom_data.bedroom`).
 3. Skipping: Non-portable packs and duplicate entries are excluded from APK asset ingestion and manifests. A skip report is generated in Markdown and JSON formats (`_skipped_packs.md` / `_skipped_packs.json` or `_validation.md` / `_validation.json` during dry runs).
@@ -1558,7 +1505,7 @@ function func_radio_scan()
 }
 ```
 
-Source: bundle_src/gml_Object_oFutaMatingPress_Create_0.gml, func_radio_scan; gml_patches/patch_create_code/new_radio.gml, func_radio_scan
+Source: bundle_src/gml_Object_oFutaMatingPress_Create_0.gml, func_radio_scan; core/gml_patches/patch_create_code/new_radio.gml, func_radio_scan
 
 ---
 
@@ -1658,10 +1605,10 @@ Provides input aggregation, command-line arguments, interactive feature selectio
    - `--fast`: Sets asset packaging mode to store uncompressed files directly (`zipfile.ZIP_STORED`).
    - `--validate-only`: Runs pack classification, skip checks, and manifest generation without building or writing modified APK binaries.
    - `-y`, `--yes`: Runs unattended builds using default options.
-   - Additional flags allow configuring toy telemetry, moving skipped packs, and adjusting format bridging parameters.
+   - Additional flags: toy telemetry (`--toy-*`, `--hmv-mode`, `--export-toy-tools`), `--move-skipped`, `--approximate` (lossy format bridging), `--no-quarantine-duplicates` and `--no-xray-origins`.
 
 3. **Modular Install Modes**:
-   - `prompt_install_options()` presents default full installations or custom granular component toggling (`core_manifest`, `scaling`, `stability`, `climax_and_panels`, `css_and_favs`, `phone_import`, `toy_telemetry`, `clean_output`, `fast_packaging`).
+   - `prompt_install_options()` presents default full installations or custom granular component toggling (`quarantine_duplicates`, `xray_origins` ("Align X-ray overlays", asked right after the duplicate question, default Yes, `--no-xray-origins`), `core_manifest`, `scaling`, `stability`, `climax_and_panels`, `css_and_favs`, `phone_import`, `toy_telemetry`, `clean_output`, `fast_packaging`).
 
 4. **Dynamic Output APK Naming**:
    - Derives the output filename from the mod archive, folder name, or base APK stem, appending `_modded.apk` unless an explicit output target is specified via `-o` / `--output`.
@@ -1735,7 +1682,7 @@ Assets are gathered across custom character and sound directories, scanning for 
             LOGGER.log(f"Discovered {len(custom_assets)} custom asset file(s).")
 ```
 
-Besides renaming, the bridge converts frame counts. `convert_bridged_strip()` in `wbp/packs.py` uses the shared `wbp/wbconv.py`: when a strip's real width matches the source format, it is padded with blank frames to the target format's frame count (lossless). Conversions that drop frames, and every portrait change, happen only with `--approximate`; otherwise the strip is renamed unchanged and listed in `<apk>_format_notes.txt`. The partner X-ray crop (4 to 3 frames) is done only for packs that carry a `custom_data.wife`; a `.spouse` pack keeps its X-ray as authored. A partner pack with only a reverse cowgirl gets that strip copied, padded to 11 frames, as the forward cowgirl.
+Besides renaming, the bridge converts frame counts. `convert_bridged_strip()` in `wbp/packs.py` uses the shared `wbp/wbconv.py`: when a strip's real width matches the source format, it is padded with blank frames to the target format's frame count (lossless). Conversions that drop frames, and every portrait change, happen only with `--approximate`; otherwise the strip is renamed unchanged and listed in `<apk>_format_notes.txt`. The partner X-ray crop (4 to 3 frames) drops a frame, so it is done only with `--approximate`, and only for packs that carry a `custom_data.wife`; otherwise the X-ray keeps its 4 frames. A partner pack with only a reverse cowgirl gets that strip copied, padded to 11 frames, as the forward cowgirl.
 
 Source: `wbp/apk.py`, `patch_game_apk`
 
@@ -1775,7 +1722,7 @@ Source: `wbp/gml_patches.py`, `patch_draw_code`
 
 ### 44. [DR-38] [Universal Shield] Universal Wife Recognition Shield & Cowgirl Fallback Architecture
 
-- **Target Modules**: `code/gml_patches/patch_mr33_engine_bytecode/old_check_wife.gml`, `code/bundle_src/gml_Object_oFutaMatingPress_Create_0.gml`
+- **Target Modules**: `core/gml_patches/patch_mr33_engine_bytecode/old_check_wife.gml`, `bundle_src/gml_Object_oFutaMatingPress_Create_0.gml`
 - **Anchor**: `function check_custom_wife(arg0)`
 
 #### Architectural Role & Custom Wife Validation
@@ -1796,13 +1743,13 @@ function check_custom_wife(arg0)
 
 The converters and the patcher apply the same fallback: a partner pack that has only a reverse cowgirl strip receives a copy of it, padded to ModRoom's 11 forward-cowgirl frames, so ModRoom's admission rule (mating press, forward cowgirl, reverse cowgirl) is met and the pack is not purged.
 
-Source: `code/gml_patches/patch_mr33_engine_bytecode/old_check_wife.gml`, `check_custom_wife`
+Source: `core/gml_patches/patch_mr33_engine_bytecode/old_check_wife.gml`, `check_custom_wife`
 
 ---
 
 ### 45. [DR-39] [Sprite Integrity] ModRoom v3.3 Frame Divisor Slicing Math & Transparent Padding Cure
 
-- **Target Modules**: `code/bundle_src/gml_Object_oFutaMatingPress_Create_0.gml`, `code/bundle_src/gml_Object_oFutaMatingPress_Draw_0.gml`
+- **Target Modules**: `bundle_src/gml_Object_oFutaMatingPress_Create_0.gml`, `bundle_src/gml_Object_oFutaMatingPress_Draw_0.gml`
 - **Functions**: `func_load_custom_futa()`, `func_load_custom_wife()`
 
 #### Architectural Role & Custom Character Loading
@@ -1838,7 +1785,7 @@ function func_load_custom_wife(arg0, arg1 = 0)
 
 The frame counts per format live in `FRAMES` in `wbp/wbconv.py` (lover standard 10/9/5/3 for portrait, mating press, cowgirl and X-ray against 17/24/19/18 modern; partner standard 10/4/5/6/5/4 for portrait, mating press, reverse cowgirl, forward cowgirl, deepthroat and X-ray against 17/5/10/11/5/3 modern). A portrait frame is 128 px wide and every other frame 160 px.
 
-Source: `code/bundle_src/gml_Object_oFutaMatingPress_Create_0.gml`, `func_load_custom_wife`
+Source: `bundle_src/gml_Object_oFutaMatingPress_Create_0.gml`, `func_load_custom_wife`
 
 ---
 
@@ -1892,7 +1839,7 @@ Provides lossless cross-engine mod portability between legacy split-category eng
      - **`output/ModRoom_Mods/`**: Legacy `_0.png` naming with distortion unlinking and Universal Wife Shield for ModRoom v3.3.
      - **`output/Deeproom_Mods/`**: Standard canonical unnumbered naming with Universal Wife Shield for Deeproom 4.0.
 
-Both converters share `wbconv.py` (an identical copy in each converter and in the patcher; `tools/sync_wbconv.py` keeps them equal). They convert in a staging folder and write the destination only when a pack was produced, support `--dry-run` and write a per-pack conversion report. Lossy frame conversion needs `--approximate`; the partner X-ray crop applies only to packs with a `custom_data.wife`; a 10-frame partner portrait is kept as authored for ModRoom. Pack folder names pass through `safe_dirname()`, which removes control and invisible characters and stacked combining marks, replaces characters Windows forbids and avoids device names, and a name the operating system still refuses falls back to the pack's folder name and then to a hash.
+Both converters share `wbconv.py` (four identical copies: both converters, the patcher's `wbp/` and the Custom Studio's `backend/`; `tools/sync_wbconv.py` keeps them equal). They convert in a staging folder and write the destination only when a pack was produced, support `--dry-run` and write a per-pack conversion report. Lossy frame conversion needs `--approximate`; the partner X-ray crop applies only to packs with a `custom_data.wife`; a 10-frame partner portrait is kept as authored for ModRoom. Pack folder names pass through `safe_dirname()`, which removes control and invisible characters and stacked combining marks, replaces characters Windows forbids and avoids device names, and a name the operating system still refuses falls back to the pack's folder name and then to a hash.
 
 Source: converters/Modded_to_WB_1.5.py; converters/WB_1.5_to_Modded.py
 
@@ -1937,7 +1884,7 @@ if (ds_map_find_value(async_load, "id") == tb_sock)
 - **Actuator Support**: Emits JSON `ScalarCmd` and `LinearCmd` messages mapped via thrust velocity and position.
 - **Safety Mechanism**: Game-loop hooks automatically fire `StopAllDevices` if the connection fails or the actuator state needs to be reset.
 
-Source: code/gml_patches/native_toy/direct_other68.gml; wbp/toy_native.py
+Source: core/gml_patches/native_toy/direct_other68.gml; wbp/toy_native.py
 
 ---
 
@@ -1948,7 +1895,7 @@ Source: code/gml_patches/native_toy/direct_other68.gml; wbp/toy_native.py
 - **Setting**: `tb_lead`, read from the `lead` key in the `[toy]` section of `toy_direct.ini`
 
 #### Architectural Role
-Bluetooth toys typically exhibit motor inertia and transmission lag. The patcher lets the user choose a latency value during the build and writes it to `assets/toy_direct.ini` in the APK. At startup the in-game client reads `profile`, `port` and `lead` from the packaged copy (`working_directory`) and then from the save folder, where a value the player changed (the profile tap) takes precedence. Every 66 ms the client sends the stroke position it expects `tb_lead` milliseconds from now: the current position plus the speed measured since the previous send times the lead, with the lead capped at a quarter of the stroke period and the result clamped to the profile's range. The vibration level is not predicted. With a lead of 0 the current position is sent.
+Bluetooth toys typically exhibit motor inertia and transmission lag. The patcher lets the user choose a latency value during the build and writes it to `assets/toy_direct.ini` in the APK. At startup the in-game client reads `profile`, `port` and `lead` from the packaged copy (`working_directory`) and then from the save folder, where a value the player changed (the profile tap) takes precedence. Every 66 ms the client sends the stroke position it expects `tb_lead` milliseconds from now: the current position plus the speed measured since the previous send times the lead, with the lead capped at half the stroke period (`min(tb_lead, _tb_dur * 0.5)`) and the result clamped to the profile's range. The vibration level is not predicted. With a lead of 0 the current position is sent.
 
 ```gml
                 var _tb_pos_src = clamp(thrust, 0, 1);
@@ -2101,7 +2048,7 @@ Source: wbp/packs.py; converters/Modded_to_WB_1.5.py
 
 ### 54. [DR-43] [Deeproom 4.0.3 Kiwami Engine Architecture] Container Traversal, Manifest Dual-Routing & INI Specification
 
-- **Target Modules**: `WB_Mobile_Patcher.py`, `converters/wbconv.py`, `bundle_src/gml_Object_oBackground_Create_0.gml`
+- **Target Modules**: `WB_Mobile_Patcher.py`, `converters/wbconv.py`, `bundle_src/gml_Object_oDialogueManager_Create_0.gml`
 - **Applicable Engines**: Deeproom 4.0.3 Kiwami, ModRoom v3.3, Wife's Bedroom v1.5
 
 #### Architectural Overview
@@ -2192,7 +2139,7 @@ function func_save_futa_condom_offset(arg0, arg1)
     var _new_line = arg0 + " = \"" + string(arg1) + "\"";
 ```
 
-Source: bundle_src/gml_Object_oFuta_MatingPress_Draw_0.gml; bundle_src/gml_Object_oFutaMatingPress_Create_0.gml
+Source: bundle_src/gml_Object_oFutaMatingPress_Draw_0.gml; bundle_src/gml_Object_oFutaMatingPress_Create_0.gml
 
 ---
 
@@ -2233,7 +2180,7 @@ During character load, the engine scans specifically for `sfx/insert`, `insert`,
     func_get_custom_audio(custom_pullout_list, string(arg0) + "/pullout");
 ```
 
-Source: bundle_src/gml_Object_oFutaMatingPress_Create_0.gml, func_play_condom_break_sfx; gml_patches/patch_create_code/new_gca.gml, func_get_custom_audio
+Source: bundle_src/gml_Object_oFutaMatingPress_Create_0.gml, func_play_condom_break_sfx; core/gml_patches/patch_create_code/new_gca.gml, func_get_custom_audio
 
 ---
 
@@ -2320,16 +2267,16 @@ Source: bundle_src/gml_Object_oBackground_Create_0.gml, func_scan_custom_backgro
 ### 61. [DR-50] [Pipeline] Build Pipeline Overview
 
 - **Where**: `main()` → `prompt_install_options()` → `patch_game_apk()` in `WB_Mobile_Patcher.py`
-- **Enabled by / Default / What you see**: every build; the console prints one line per stage.
+- **Enabled by / Default / What you see**: every build; the console prints one line per stage, with progress bars (`print_progress`) for the pack check, duplicate scan and X-ray alignment and spinners (`Spinner`) while UndertaleModCli compiles.
 
 1. **Inputs**: positional inputs can be a base `.apk`, a PC game folder, mod folders or `.zip` archives. Zips are extracted to temporary folders; several mod inputs are merged into one staging folder.
-2. **Engine detection** (`detect_mod_engine_version`): returns `v15`, `modroom33` or `deeproom` from folder layout and `data.win` traits.
+2. **Engine detection** (`detect_mod_engine_version`): returns `1.5`, `modroom33` or `1.4` (Deeproom) from folder layout and `data.win` traits.
 3. **Base APK** (`find_matching_base_apk`): `-b/--base-apk` wins; otherwise searches the input folder, patcher folder, and `input/` for engine expected names.
 4. **Options** (`prompt_install_options`): user selects installation profile or feature toggles.
 5. **Backup**: base APK is copied to `output/<base>_base_backup.apk.bak` if it does not exist.
 6. **Game code**: `assets/game.droid` is extracted and patched via `patch_game_apk` using UndertaleModCli to replace code entries.
 7. **Pack checks**: `plan_pack_skips` identifies incompatible or duplicate packs before gathering assets.
-8. **Assets and manifests**: `gather_custom_assets` adds files under sanitized lower-case paths; `generate_manifest_data` creates `_manifest.txt` indexes.
+8. **Assets and manifests**: `gather_custom_assets` adds files under sanitized lower-case paths; `generate_manifest_data` creates `_manifest.txt` indexes; `convert_descriptors` writes one descriptor per pack for ModRoom / v1.5 and, for Deeproom with the X-ray option on, measured X-ray origins (listed in `output/<apk>_xray_origins.txt`).
 9. **Repackaging & Signing**: The APK is repacked and signed using `uber-apk-signer.jar`.
 
 Source: wbp/cli.py, main; wbp/apk.py, patch_game_apk
@@ -2453,7 +2400,7 @@ Source: wbp/env.py, verify_environment; wbp/env.py, find_uber_apk_signer
 Character packs exist in two main formats: legacy (standard names) and modern (ModRoom/Deeproom `_0.png` names). They use different frame counts and descriptor keys.
 
 **Format Differences**:
-- **Deeproom 4.0.3**: Reads both sets natively. Modern loader uses `custom_data.wife` or `custom_data.spouse`. Legacy loader is triggered by `custom_mating_press.png`.
+- **Deeproom 4.0.3**: Reads both sets natively. A partner pack with `custom_data.spouse` or `custom_mating_press.png` (or without `custom_wife_mating_press_0.png`) goes to the spouse loader, which reads `custom_data.spouse`; otherwise the modern loader reads `custom_data.wife` and only its flat `[sprite]` keys.
 - **ModRoom V3.3**: Prefers `_0.png` names; requires specific `custom_data.wife` keys for hitboxes.
 - **Wife's Bedroom v1.5**: Reads standard names only (e.g., `custom_portrait.png`).
 
@@ -2462,7 +2409,7 @@ Character packs exist in two main formats: legacy (standard names) and modern (M
 - **Name Bridge**: For ModRoom builds, standard-named strips are copied to `_0` names so the native loader finds them. Deeproom builds keep both names as authored.
 - **Descriptor Conversion**: `wbp/descriptors.py` converts between `.spouse` and `.wife` keys based on the engine profile:
   ```python
-  def convert_descriptors(assets, target_arch):
+  def convert_descriptors(assets, target_arch, xray_origins=True):
       if target_arch not in ("modroom33", "v15"):
           return assets, {}
       # ...
