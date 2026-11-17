@@ -419,8 +419,14 @@ radio_advance_cooldown = 0;
 function func_radio_scan()
 {
     ds_list_clear(radio_track_list);
-    var _base = (os_type == os_android || os_type == os_ios) ? "custom_music" : (tc_wd + "/custom_music");
+    var _base = (os_type == os_android || os_type == os_ios) ? "custom_stuff/custom_music" : (tc_wd + "/custom_stuff/custom_music");
     var _f = tc_ff_first(_base + "/*.ogg", 0);
+    if (_f == "")
+    {
+        tc_ff_close();
+        _base = (os_type == os_android || os_type == os_ios) ? "custom_music" : (tc_wd + "/custom_music");
+        _f = tc_ff_first(_base + "/*.ogg", 0);
+    }
     while (_f != "")
     {
         var _full = _base + "/" + _f;
@@ -1041,8 +1047,8 @@ stat_livestream_viewers = 0;
 stat_total_bunny_money = 0;
 livestream_dialogue = 
 {
-    username_start: ["juicy", "jizzyjr", "fallker", "miska", "milky", "big", "cock", "pussy", "boob", "yummy", "slutty", "cum", "thick", "goth", "hung", "huge", "tiny", "sperm", "dommy"],
-    username_end: ["cock", "daddy", "mommy", "lover", "futa", "femboy", "bimbo", "slut", "succubus", "kitty", "bunny", "machine", "tits", "booty", "cow"],
+    username_start: ["juicy", "jizzyjr", "NPC", "A-ko", "chavez", "a.love", "fallker", "miska", "milky", "big", "cock", "pussy", "boob", "yummy", "slutty", "cum", "thick", "goth", "hung", "huge", "tiny", "sperm", "dommy", "mrmoneybags", "xXxtremegmrXxX", "fisto", "ben", "J-silverballs"],
+    username_end: ["cock", "daddy", "mommy", "lover", "futa", "femboy", "bimbo", "slut", "succubus", "kitty", "bunny", "machine", "tits", "booty", "cow", "pegged", "paypig", "tired", "dover"],
     message_normal: ["hello", "hey guys", "jerking off rn", "stroking it", "<3", "woah :O", "haaiii", ":3", "yummers", "brb", "i love boobs", "i'm gay", "subscribed"],
     message_sex: ["faster!!", "i wish that was me...", "such a great view", "move the camera closer", "i wish my cock was that big", "so deep...", "plap plap plap"],
     message_sex_halfway: ["orgasm incoming!!", "almost there"],
@@ -1065,7 +1071,8 @@ livestream_dialogue =
     message_android_sex_halfway: ["orgasm incoming!!", "almost there"],
     message_android_orgasm: ["god yes", "oughh", "cumming!!", "yessssss", "keep pumping!!", "more!!", "so much cum", "get pregnant!!", "POG", "LESS GOOOO!!!", "YEAHHH"]
 };
-var _ls_json_path = tc_wd + "/dialogue/livestream.json";
+var _ls_json_path = tc_wd + "/custom_stuff/dialogue/livestream.json"; // Deeproom 4.0.3 location
+if (!file_exists(_ls_json_path)) _ls_json_path = file_exists("custom_stuff/dialogue/livestream.json") ? "custom_stuff/dialogue/livestream.json" : (tc_wd + "/dialogue/livestream.json");
 if (file_exists(_ls_json_path))
 {
     var _ls_file = file_text_open_read(_ls_json_path);
@@ -1188,7 +1195,7 @@ custom_cowgirl = -1;
 custom_deepthroat = -1;
 custom_futa_deepthroat = -1;
 custom_deepthroat_alt = -1;
-comment = "custom ball clench sprites (BallsClench folder)";
+comment = "custom ball clench sprites";
 custom_bc_mating_press = -1;
 custom_bc_cowgirl = -1;
 custom_bc_crest = -1;
@@ -1197,6 +1204,11 @@ custom_bc_crest_cg = -1;
 custom_bc_crest_dt = -1;
 custom_bc_loaded = false;
 custom_bc_mp_off_y = 0;
+custom_bc_cg_off_y = 0;
+custom_bc_rc_off_y = 0;
+custom_bc_dt_off_y = 0;
+custom_condom_broken = -1;
+legacy_custom_xray_broken = -1;
 custom_condom = -1;
 custom_xray = -1;
 legacy_bc_mating_press = -1;
@@ -1252,9 +1264,10 @@ custom_cum_y_offset_dt = 0;
 custom_cum_y_offset_cg = 0;
 custom_cum_y_offset_mp = 0;
 condom_offset_deepthroat = 0;
+custom_condom_offset_deepthroat = 0;
+last_condom_break_snd = -1;
 insert_snd_last = 0;
 pullout_snd_last = 0;
-last_condom_break_snd = 0;
 custom_insert_list = ds_list_create();
 custom_pullout_list = ds_list_create();
 custom_condom_break_list = ds_list_create();
@@ -1367,6 +1380,7 @@ for (var _bi = 0; _bi < array_length(_cs_bases); _bi++)
     }
     tc_ff_close();
 }
+cs_futa_packs_loaded = ds_list_size(cs_futa_packs) > 0;
 var _wd = working_directory;
 if (string_char_at(_wd, string_length(_wd)) == "/")
 {
@@ -2121,18 +2135,21 @@ function func_load_custom_spouse(arg0)
         {
             custom_dialogue_set_bottom = -1;
         }
-        custom_kiss_y_offset = ini_read_real("portrait", "kiss_y_offset", 0);
-        custom_kiss_x_offset = ini_read_real("portrait", "kiss_x_offset", 0);
-        custom_boob_y_offset = ini_read_real("portrait", "boob_y_offset", 0);
-        custom_boob_x_offset = ini_read_real("portrait", "boob_x_offset", 0);
-        custom_headpat_y_offset = ini_read_real("portrait", "headpat_y_offset", 0);
-        custom_headpat_x_offset = ini_read_real("portrait", "headpat_x_offset", 0);
-        wife_saved_kiss_y_offset = custom_kiss_y_offset;
-        wife_saved_kiss_x_offset = custom_kiss_x_offset;
-        wife_saved_boob_y_offset = custom_boob_y_offset;
-        wife_saved_boob_x_offset = custom_boob_x_offset;
-        wife_saved_headpat_y_offset = custom_headpat_y_offset;
-        wife_saved_headpat_x_offset = custom_headpat_x_offset;
+        wife_saved_kiss_y_offset = ini_read_real("portrait", "kiss_y_offset", 0);
+        wife_saved_kiss_x_offset = ini_read_real("portrait", "kiss_x_offset", 0);
+        wife_saved_boob_y_offset = ini_read_real("portrait", "boob_y_offset", 0);
+        wife_saved_boob_x_offset = ini_read_real("portrait", "boob_x_offset", 0);
+        wife_saved_headpat_y_offset = ini_read_real("portrait", "headpat_y_offset", 0);
+        wife_saved_headpat_x_offset = ini_read_real("portrait", "headpat_x_offset", 0);
+        if (portrait_number == 1)
+        {
+            custom_kiss_y_offset = wife_saved_kiss_y_offset;
+            custom_kiss_x_offset = wife_saved_kiss_x_offset;
+            custom_boob_y_offset = wife_saved_boob_y_offset;
+            custom_boob_x_offset = wife_saved_boob_x_offset;
+            custom_headpat_y_offset = wife_saved_headpat_y_offset;
+            custom_headpat_x_offset = wife_saved_headpat_x_offset;
+        }
         custom_wife_size_response = clamp(ini_read_real("personality", "size_response", 1), 0.4, 1.8);
         custom_wife_intensity_response = clamp(ini_read_real("personality", "intensity_response", 1), 0.4, 1.8);
         custom_wife_cum_response = clamp(ini_read_real("personality", "cum_response", 1), 0.4, 1.8);
@@ -2352,7 +2369,11 @@ function func_replace_tags(arg0)
 function func_load_vanilla_dialogue(arg0)
 {
     custom_dialogue_set_top = -1;
-    var _path = (os_type == os_android || os_type == os_ios) ? ("dialogue/" + arg0) : (working_directory + "dialogue/" + arg0);
+    var _path = (os_type == os_android || os_type == os_ios) ? ("custom_stuff/dialogue/" + arg0) : (working_directory + "/custom_stuff/dialogue/" + arg0);
+    if (!file_exists(_path))
+    {
+        _path = (os_type == os_android || os_type == os_ios) ? ("dialogue/" + arg0) : (working_directory + "dialogue/" + arg0);
+    }
     if (!file_exists(_path))
     {
         _path = "dialogue_packs/" + arg0;
@@ -2466,14 +2487,36 @@ function func_load_custom_wife(arg0, arg1 = 0)
         custom_eggxcelent_pill = bool(ini_read_real("pills", "eggxcelent_pill", 0));
         custom_greedy_womb_pill = bool(ini_read_real("pills", "greedy_womb_pill", 0));
         custom_partner_male = bool(ini_read_real("gender", "is_male", 0));
-        custom_kiss_y_offset = ini_read_real("portrait", "kiss_y_offset", 0);
-        custom_kiss_x_offset = ini_read_real("portrait", "kiss_x_offset", 0);
-        custom_boob_y_offset = ini_read_real("portrait", "boob_y_offset", 0);
-        custom_boob_x_offset = ini_read_real("portrait", "boob_x_offset", 0);
-        custom_headpat_y_offset = ini_read_real("portrait", "headpat_y_offset", 0);
-        custom_headpat_x_offset = ini_read_real("portrait", "headpat_x_offset", 0);
+        wife_saved_kiss_y_offset = ini_read_real("portrait", "kiss_y_offset", 0);
+        wife_saved_kiss_x_offset = ini_read_real("portrait", "kiss_x_offset", 0);
+        wife_saved_boob_y_offset = ini_read_real("portrait", "boob_y_offset", 0);
+        wife_saved_boob_x_offset = ini_read_real("portrait", "boob_x_offset", 0);
+        wife_saved_headpat_y_offset = ini_read_real("portrait", "headpat_y_offset", 0);
+        wife_saved_headpat_x_offset = ini_read_real("portrait", "headpat_x_offset", 0);
+        if (portrait_number == 1)
+        {
+            custom_kiss_y_offset = wife_saved_kiss_y_offset;
+            custom_kiss_x_offset = wife_saved_kiss_x_offset;
+            custom_boob_y_offset = wife_saved_boob_y_offset;
+            custom_boob_x_offset = wife_saved_boob_x_offset;
+            custom_headpat_y_offset = wife_saved_headpat_y_offset;
+            custom_headpat_x_offset = wife_saved_headpat_x_offset;
+        }
         custom_dialogue_set_bottom = {};
         var _bottom_keys = ["intro", "intro_return", "sex_start", "sex_continue", "sex_halfway", "sex_exhausted", "sex_orgasm", "sex_after", "cleanup", "touch_boobs", "moan", "kiss", "headpat", "condom_on", "condom_off", "condom_remove", "condom_break"];
+        for (var _i = 0; _i < array_length(_bottom_keys); _i += 1)
+        {
+            var _key = _bottom_keys[_i];
+            var _result = func_check_custom_dialogue(_key, false);
+            if (array_length(_result) > 0)
+            {
+                variable_struct_set(custom_dialogue_set_bottom, _key, _result);
+            }
+        }
+        if (variable_struct_names_count(custom_dialogue_set_bottom) == 0)
+        {
+            custom_dialogue_set_bottom = -1;
+        }
         ini_close();
     }
     custom_wife_alt_max = 1;
@@ -2872,7 +2915,20 @@ function check_custom_futa(arg0)
 
 function check_custom_image_size(arg0)
 {
-    return true;
+    // Native Deeproom 4.0.3: a 19-frame custom_mating_press.png (160 px frames) is not a legacy strip, so the
+    // pack goes to the modern _0 loader. A pack with no modern mating press keeps the legacy loader (its fallbacks).
+    if (!file_exists(string(arg0) + "/custom_futa_mating_press_0.png"))
+    {
+        return true;
+    }
+    var test_sprite = sprite_add(string(arg0) + "/custom_mating_press.png", 1, false, false, 0, 0);
+    if (test_sprite == -1 || !sprite_exists(test_sprite))
+    {
+        return true;
+    }
+    var frames = sprite_get_width(test_sprite) / 160;
+    sprite_delete(test_sprite);
+    return frames != 19;
 }
 
 function func_load_custom_futa(arg0, arg1 = 0)
@@ -2896,6 +2952,14 @@ function func_load_custom_futa(arg0, arg1 = 0)
             portrait_origin_y = 64;
             var custom_condom_offset = 78;
             custom_cum_y_offset = 0;
+            custom_cum_y_offset_mp = 0;
+            custom_cum_y_offset_cg = 0;
+            custom_cum_y_offset_dt = 0;
+            custom_condom_offset_deepthroat = 0;
+            custom_bc_mp_off_y = 0;
+            custom_bc_cg_off_y = 0;
+            custom_bc_rc_off_y = 0;
+            custom_bc_dt_off_y = 0;
             custom_xray_offset_y = 0;
             custom_condom_offset_mpress = 0;
             custom_condom_offset_cowgirls = 0;
@@ -2943,10 +3007,14 @@ function func_load_custom_futa(arg0, arg1 = 0)
                 custom_condom_offset = ini_read_real("sprite", "condom_y", 78);
                 custom_xray_offset_y = ini_read_real("sprite", "xray_offset_y", 0);
                 custom_cum_y_offset = ini_read_real("sprite", "cum_y_offset", 0);
+                custom_cum_y_offset_mp = ini_read_real("CumPos", "mating_press_cum_offset", 0);
+                custom_cum_y_offset_cg = ini_read_real("CumPos", "cg_and_rcg_cum_offset", 0);
+                custom_cum_y_offset_dt = ini_read_real("CumPos", "deepthroat_cum_offset", 0);
                 portrait_origin_x = ini_read_real("portrait", "origin_x", 64);
                 portrait_origin_y = ini_read_real("portrait", "origin_y", 64);
-                custom_condom_offset_mpress = ini_read_real("condom", "condom_y_mpress", 0);
-                custom_condom_offset_cowgirls = ini_read_real("condom", "condom_y_cowgirls", 0);
+                custom_condom_offset_mpress = ini_read_real("CondomPos", "condom_y_mpress", ini_read_real("condom", "condom_y_mpress", 0));
+                custom_condom_offset_cowgirls = ini_read_real("CondomPos", "condom_y_cowgirls", ini_read_real("condom", "condom_y_cowgirls", 0));
+                custom_condom_offset_deepthroat = ini_read_real("CondomPos", "deepthroat_condom_offset", 0);
                 sex_progress_max = ini_read_real("stats", "stamina", 75, 700);
                 user_pumps_max = ini_read_real("stats", "max_pumps", 12, 500);
                 cum_shot_mult = ini_read_real("stats", "cumshot_mult", 1);
@@ -2963,6 +3031,10 @@ function func_load_custom_futa(arg0, arg1 = 0)
                 custom_stroke_depth = ini_read_real("stats", "stroke_depth", 1);
                 custom_stroke_speed = ini_read_real("stats", "stroke_speed", 1);
                 custom_pump_delay = clamp(ini_read_real("stats", "pump_delay", 90), 30, 360);
+                custom_bc_mp_off_y = ini_read_real("BallClench", "bc_mp_off_y", 0);
+                custom_bc_cg_off_y = ini_read_real("BallClench", "bc_cg_off_y", 0);
+                custom_bc_rc_off_y = ini_read_real("BallClench", "bc_rc_off_y", 0);
+                custom_bc_dt_off_y = ini_read_real("BallClench", "bc_dt_off_y", 0);
                 condom_color = func_hex_to_color(ini_read_string("colors", "condom", ""), 16777215);
                 cum_color = func_hex_to_color(ini_read_string("colors", "cum", ""), 13497599);
                 custom_mega_sperm_pill = bool(ini_read_real("pills", "mega_sperm_pill", 0));
@@ -2997,18 +3069,21 @@ function func_load_custom_futa(arg0, arg1 = 0)
                 {
                     custom_dialogue_set_top = -1;
                 }
-                custom_kiss_y_offset = ini_read_real("portrait", "kiss_y_offset", 0);
-                custom_kiss_x_offset = ini_read_real("portrait", "kiss_x_offset", 0);
-                custom_boob_y_offset = ini_read_real("portrait", "boob_y_offset", 0);
-                custom_boob_x_offset = ini_read_real("portrait", "boob_x_offset", 0);
-                custom_headpat_y_offset = ini_read_real("portrait", "headpat_y_offset", 0);
-                custom_headpat_x_offset = ini_read_real("portrait", "headpat_x_offset", 0);
-                futa_saved_kiss_y_offset = custom_kiss_y_offset;
-                futa_saved_kiss_x_offset = custom_kiss_x_offset;
-                futa_saved_boob_y_offset = custom_boob_y_offset;
-                futa_saved_boob_x_offset = custom_boob_x_offset;
-                futa_saved_headpat_y_offset = custom_headpat_y_offset;
-                futa_saved_headpat_x_offset = custom_headpat_x_offset;
+                futa_saved_kiss_y_offset = ini_read_real("portrait", "kiss_y_offset", 0);
+                futa_saved_kiss_x_offset = ini_read_real("portrait", "kiss_x_offset", 0);
+                futa_saved_boob_y_offset = ini_read_real("portrait", "boob_y_offset", 0);
+                futa_saved_boob_x_offset = ini_read_real("portrait", "boob_x_offset", 0);
+                futa_saved_headpat_y_offset = ini_read_real("portrait", "headpat_y_offset", 0);
+                futa_saved_headpat_x_offset = ini_read_real("portrait", "headpat_x_offset", 0);
+                if (portrait_number == 0)
+                {
+                    custom_kiss_y_offset = futa_saved_kiss_y_offset;
+                    custom_kiss_x_offset = futa_saved_kiss_x_offset;
+                    custom_boob_y_offset = futa_saved_boob_y_offset;
+                    custom_boob_x_offset = futa_saved_boob_x_offset;
+                    custom_headpat_y_offset = futa_saved_headpat_y_offset;
+                    custom_headpat_x_offset = futa_saved_headpat_x_offset;
+                }
                 ini_close();
             }
             f_port = string(arg0) + "/custom_portrait.png";
@@ -3056,28 +3131,22 @@ function func_load_custom_futa(arg0, arg1 = 0)
                 sprite_delete(custom_sperm_big_sprite);
             }
             custom_sperm_big_sprite = -1;
-            var _f_sperm = string(arg0) + "/custom_sperm.png";
+            var _f_sperm = string(arg0) + "/custom_futa_sperm.png";
+            if (!file_exists(_f_sperm)) _f_sperm = string(arg0) + "/custom_sperm.png";
             if (file_exists(_f_sperm))
             {
                 custom_sperm_sprite = sprite_add(_f_sperm, 4, false, false, 24, 24);
             }
-            var _f_sperm_big = string(arg0) + "/custom_sperm_big.png";
+            var _f_sperm_big = string(arg0) + "/custom_futa_sperm_big.png";
+            if (!file_exists(_f_sperm_big)) _f_sperm_big = string(arg0) + "/custom_sperm_big.png";
             if (file_exists(_f_sperm_big))
             {
                 custom_sperm_big_sprite = sprite_add(_f_sperm_big, 4, false, false, 24, 24);
             }
 
             f_mate = string(arg0) + "/custom_mating_press.png";
-            var _test_m = sprite_add(f_mate, 1, false, false, 0, 0);
-            var _frame_w = (sprite_origin_x > 0) ? (sprite_origin_x * 2) : 160;
-            var _mf = 9;
-            if (sprite_exists(_test_m) && _test_m != -1)
-            {
-                var _mw = sprite_get_width(_test_m);
-                sprite_delete(_test_m);
-                _mf = max(1, round(_mw / _frame_w));
-            }
-            var _temp_mate = sprite_add(f_mate, _mf, false, false, sprite_origin_x, sprite_origin_y);
+            // Native Deeproom 4.0.3: 9 frames at the [sprite] mating_press_origin, drawn unscaled.
+            var _temp_mate = sprite_add(f_mate, 9, false, false, mp_origin_x, mp_origin_y);
             if (sprite_exists(_temp_mate) && _temp_mate != -1)
             {
                 is_legacy_custom = true;
@@ -3086,8 +3155,7 @@ function func_load_custom_futa(arg0, arg1 = 0)
                     sprite_delete(legacy_custom_mating_press);
                 }
                 legacy_custom_mating_press = _temp_mate;
-                custom_mating_press_scale = 160 / _frame_w;
-                sprite_set_offset(legacy_custom_mating_press, sprite_origin_x, sprite_origin_y);
+                custom_mating_press_scale = 1;
             }
             f_cow = string(arg0) + "/custom_reverse_cowgirl.png";
             if (file_exists(f_cow))
@@ -3144,6 +3212,15 @@ function func_load_custom_futa(arg0, arg1 = 0)
                     sprite_set_offset(legacy_custom_xray, 80 / _lfx_sc, 84 / _lfx_sc);
                 }
             }
+            var f_xray_broken = string(arg0) + "/custom_xray_broken.png";
+            if (file_exists(f_xray_broken))
+            {
+                if (sprite_exists(legacy_custom_xray_broken))
+                {
+                    sprite_delete(legacy_custom_xray_broken);
+                }
+                legacy_custom_xray_broken = sprite_add(f_xray_broken, 1, false, false, 80, 84);
+            }
             var f_condom = string(arg0) + "/custom_condom.png";
             if (file_exists(f_condom))
             {
@@ -3152,6 +3229,19 @@ function func_load_custom_futa(arg0, arg1 = 0)
                     sprite_delete(legacy_custom_condom);
                 }
                 legacy_custom_condom = sprite_add(f_condom, 2, false, false, sprite_origin_x, sprite_origin_y);
+            }
+            var f_condom_broken = string(arg0) + "/custom_condom_broken.png";
+            if (file_exists(f_condom_broken))
+            {
+                if (sprite_exists(custom_condom_broken))
+                {
+                    sprite_delete(custom_condom_broken);
+                }
+                custom_condom_broken = sprite_add(f_condom_broken, 2, false, false, sprite_origin_x, sprite_origin_y);
+            }
+            else
+            {
+                custom_condom_broken = -1;
             }
             f_deep = string(arg0) + "/custom_deepthroat.png";
             if (file_exists(f_deep))
@@ -3260,6 +3350,7 @@ function func_load_custom_futa(arg0, arg1 = 0)
             custom_futa_alt_max = 0;
             exit;
         }
+        is_legacy_custom = false;  // 19-frame strip: loaded by the modern loader below, drawn as a modern lover
     }
     var sprite_origin_x = 80;
     var sprite_origin_y = 84;
@@ -3268,6 +3359,14 @@ function func_load_custom_futa(arg0, arg1 = 0)
     var portrait_origin_x = 64;
     var portrait_origin_y = 64;
     custom_cum_y_offset = 0;
+    custom_cum_y_offset_mp = 0;
+    custom_cum_y_offset_cg = 0;
+    custom_cum_y_offset_dt = 0;
+    custom_condom_offset_deepthroat = 0;
+    custom_bc_mp_off_y = 0;
+    custom_bc_cg_off_y = 0;
+    custom_bc_rc_off_y = 0;
+    custom_bc_dt_off_y = 0;
     custom_xray_offset_y = 0;
     custom_condom_offset_mpress = 0;
     custom_condom_offset_cowgirls = 0;
@@ -3318,10 +3417,14 @@ function func_load_custom_futa(arg0, arg1 = 0)
         dt_origin_y = ini_read_real("sprite", "deepthroat_origin_y", sprite_origin_y);
         custom_xray_offset_y = ini_read_real("sprite", "xray_offset_y", 0);
         custom_cum_y_offset = ini_read_real("sprite", "cum_y_offset", 0);
+        custom_cum_y_offset_mp = ini_read_real("CumPos", "mating_press_cum_offset", 0);
+        custom_cum_y_offset_cg = ini_read_real("CumPos", "cg_and_rcg_cum_offset", 0);
+        custom_cum_y_offset_dt = ini_read_real("CumPos", "deepthroat_cum_offset", 0);
         portrait_origin_x = ini_read_real("portrait", "origin_x", 64);
         portrait_origin_y = ini_read_real("portrait", "origin_y", 64);
-        custom_condom_offset_mpress = ini_read_real("condom", "condom_y_mpress", 0);
-        custom_condom_offset_cowgirls = ini_read_real("condom", "condom_y_cowgirls", 0);
+        custom_condom_offset_mpress = ini_read_real("CondomPos", "condom_y_mpress", ini_read_real("condom", "condom_y_mpress", 0));
+        custom_condom_offset_cowgirls = ini_read_real("CondomPos", "condom_y_cowgirls", ini_read_real("condom", "condom_y_cowgirls", 0));
+        custom_condom_offset_deepthroat = ini_read_real("CondomPos", "deepthroat_condom_offset", 0);
         custom_max_loads = ini_read_real("stats", "max_orgasms", 5);
         custom_top_boob_size = ini_read_real("stats", "top_boob_size", 1);
         custom_top_ass_size = ini_read_real("stats", "top_ass_size", 1);
@@ -3333,6 +3436,10 @@ function func_load_custom_futa(arg0, arg1 = 0)
         custom_stroke_depth = ini_read_real("stats", "stroke_depth", 1);
         custom_stroke_speed = ini_read_real("stats", "stroke_speed", 1);
         custom_pump_delay = clamp(ini_read_real("stats", "pump_delay", 90), 30, 360);
+        custom_bc_mp_off_y = ini_read_real("BallClench", "bc_mp_off_y", 0);
+        custom_bc_cg_off_y = ini_read_real("BallClench", "bc_cg_off_y", 0);
+        custom_bc_rc_off_y = ini_read_real("BallClench", "bc_rc_off_y", 0);
+        custom_bc_dt_off_y = ini_read_real("BallClench", "bc_dt_off_y", 0);
         var _cc_hex = ini_read_string("condom", "condom_color", "");
         if (_cc_hex != "")
         {
@@ -3400,7 +3507,10 @@ function func_load_custom_futa(arg0, arg1 = 0)
             custom_stroke_depth = ini_read_real(_alt_sec, "stroke_depth", custom_stroke_depth);
             custom_stroke_speed = ini_read_real(_alt_sec, "stroke_speed", custom_stroke_speed);
             custom_pump_delay = clamp(ini_read_real(_alt_sec, "pump_delay", custom_pump_delay), 30, 360);
-            custom_bc_mp_off_y = ini_read_real(_alt_sec, "bc_mp_off_y", 0);
+            custom_bc_mp_off_y = ini_read_real("BallClench", "bc_mp_off_y", 0);
+            custom_bc_cg_off_y = ini_read_real("BallClench", "bc_cg_off_y", 0);
+            custom_bc_rc_off_y = ini_read_real("BallClench", "bc_rc_off_y", 0);
+            custom_bc_dt_off_y = ini_read_real("BallClench", "bc_dt_off_y", 0);
         }
         custom_dialogue_set_top = {};
         var _top_keys = ["intro", "intro_return", "sex_start", "sex_continue", "sex_halfway", "sex_exhausted", "sex_orgasm", "sex_after", "cleanup", "kiss", "condom_on", "condom_off", "condom_broken", "condom_remove", "condom_break", "pullout", "headpat", "spank", "touch_boobs", "moan", "mystery_effect", "sex_encorgasm"];
@@ -3416,6 +3526,21 @@ function func_load_custom_futa(arg0, arg1 = 0)
         if (variable_struct_names_count(custom_dialogue_set_top) == 0)
         {
             custom_dialogue_set_top = -1;
+        }
+        futa_saved_kiss_y_offset = ini_read_real("portrait", "kiss_y_offset", 0);
+        futa_saved_kiss_x_offset = ini_read_real("portrait", "kiss_x_offset", 0);
+        futa_saved_boob_y_offset = ini_read_real("portrait", "boob_y_offset", 0);
+        futa_saved_boob_x_offset = ini_read_real("portrait", "boob_x_offset", 0);
+        futa_saved_headpat_y_offset = ini_read_real("portrait", "headpat_y_offset", 0);
+        futa_saved_headpat_x_offset = ini_read_real("portrait", "headpat_x_offset", 0);
+        if (portrait_number == 0)
+        {
+            custom_kiss_y_offset = futa_saved_kiss_y_offset;
+            custom_kiss_x_offset = futa_saved_kiss_x_offset;
+            custom_boob_y_offset = futa_saved_boob_y_offset;
+            custom_boob_x_offset = futa_saved_boob_x_offset;
+            custom_headpat_y_offset = futa_saved_headpat_y_offset;
+            custom_headpat_x_offset = futa_saved_headpat_x_offset;
         }
         ini_close();
     }
@@ -3501,6 +3626,32 @@ function func_load_custom_futa(arg0, arg1 = 0)
             var _px_yoff = (custom_xray_offset_y > 0) ? (84 - custom_xray_offset_y) : (84 + custom_xray_offset_y);
             sprite_set_offset(custom_xray, 80 / _px_sc, _px_yoff / _px_sc);
         }
+    }
+    var f_condom_14 = string(arg0) + "/custom_condom.png";
+    if (file_exists(f_condom_14))
+    {
+        if (sprite_exists(custom_condom))
+        {
+            sprite_delete(custom_condom);
+        }
+        custom_condom = sprite_add(f_condom_14, 2, false, false, sprite_origin_x, sprite_origin_y);
+    }
+    else
+    {
+        custom_condom = -1;
+    }
+    var f_condom_broken_14 = string(arg0) + "/custom_condom_broken.png";
+    if (file_exists(f_condom_broken_14))
+    {
+        if (sprite_exists(custom_condom_broken))
+        {
+            sprite_delete(custom_condom_broken);
+        }
+        custom_condom_broken = sprite_add(f_condom_broken_14, 2, false, false, sprite_origin_x, sprite_origin_y);
+    }
+    else
+    {
+        custom_condom_broken = -1;
     }
     var f_futa_dt = string(arg0) + "/custom_futa_deepthroat" + _suffix;
     if (file_exists(f_futa_dt))
@@ -3670,6 +3821,26 @@ function func_load_custom_futa(arg0, arg1 = 0)
     {
         custom_bc_loaded = true;
     }
+    if (sprite_exists(custom_sperm_sprite))
+    {
+        sprite_delete(custom_sperm_sprite);
+    }
+    custom_sperm_sprite = -1;
+    if (sprite_exists(custom_sperm_big_sprite))
+    {
+        sprite_delete(custom_sperm_big_sprite);
+    }
+    custom_sperm_big_sprite = -1;
+    var _f_sperm = string(arg0) + "/custom_futa_sperm.png";
+    var _f_sperm_big = string(arg0) + "/custom_futa_sperm_big.png";
+    if (file_exists(_f_sperm))
+    {
+        custom_sperm_sprite = sprite_add(_f_sperm, 4, false, false, 24, 24);
+    }
+    if (file_exists(_f_sperm_big))
+    {
+        custom_sperm_big_sprite = sprite_add(_f_sperm_big, 4, false, false, 24, 24);
+    }
     custom_sprite_loaded = true;
 }
 
@@ -3749,7 +3920,27 @@ function func_get_futa_frame(arg0, arg1)
                     comment = "pussy";
                     return -1;
                 case "shaft":
-                    comment = "layer 1 (base/sheath) - safely falls back to base custom asset if pill art missing";
+                    comment = "layer 1 (base/sheath)";
+                    if (penis_type_index == 0)
+                    {
+                        comment = "human shaft";
+                        return 7;
+                    }
+                    if (penis_type_index == 1)
+                    {
+                        comment = "horse sheath";
+                        return -1;
+                    }
+                    if (penis_type_index == 2)
+                    {
+                        comment = "knotted penis full";
+                        return -1;
+                    }
+                    if (penis_type_index == 3)
+                    {
+                        comment = "knotted horse full";
+                        return -1;
+                    }
                     return 7;
                 case "glans":
                     comment = "layer 2 (tip/extension)";
@@ -3775,11 +3966,41 @@ function func_get_futa_frame(arg0, arg1)
                     }
                     return -1;
                 case "condom":
-                    comment = "condom - safely falls back to base condom frame 0 if pill art missing";
+                    comment = "condom";
+                    if (penis_type_index == 0)
+                    {
+                        comment = "human condom";
+                        return 0;
+                    }
+                    if (penis_type_index == 1 || penis_type_index == 3)
+                    {
+                        comment = "horse/knotted horse condom";
+                        return -1;
+                    }
+                    if (penis_type_index == 2)
+                    {
+                        comment = "knotted penis condom";
+                        return -1;
+                    }
                     return 0;
                 case "broken":
-                    comment = "broken condom - safely falls back to frame 0 if pill art missing";
-                    return 0;
+                    comment = "broken condom";
+                    if (penis_type_index == 0)
+                    {
+                        comment = "human broken condom";
+                        return -1;
+                    }
+                    if (penis_type_index == 1 || penis_type_index == 3)
+                    {
+                        comment = "horse/knotted horse broken condom";
+                        return -1;
+                    }
+                    if (penis_type_index == 2)
+                    {
+                        comment = "knotted penis broken condom";
+                        return -1;
+                    }
+                    return -1;
             }
         }
         if (_pos == 1)
@@ -3807,7 +4028,27 @@ function func_get_futa_frame(arg0, arg1)
                     }
                     return temp_hands_id;
                 case "shaft":
-                    comment = "layer 1 (base/sheath) - safely falls back to base custom asset if pill art missing";
+                    comment = "layer 1 (base/sheath)";
+                    if (penis_type_index == 0)
+                    {
+                        comment = "human shaft";
+                        return 2;
+                    }
+                    if (penis_type_index == 1)
+                    {
+                        comment = "horse sheath";
+                        return -1;
+                    }
+                    if (penis_type_index == 2)
+                    {
+                        comment = "knotted penis";
+                        return -1;
+                    }
+                    if (penis_type_index == 3)
+                    {
+                        comment = "knotted horse shaft";
+                        return -1;
+                    }
                     return 2;
                 case "glans":
                     comment = "layer 2 (tip/extension)";
@@ -3895,7 +4136,27 @@ function func_get_futa_frame(arg0, arg1)
                     }
                     return temp_hands_id;
                 case "shaft":
-                    comment = "layer 1 (base/sheath) - safely falls back to base custom asset if pill art missing";
+                    comment = "layer 1 (base/sheath)";
+                    if (penis_type_index == 0)
+                    {
+                        comment = "human shaft";
+                        return 2;
+                    }
+                    if (penis_type_index == 1)
+                    {
+                        comment = "horse sheath";
+                        return -1;
+                    }
+                    if (penis_type_index == 2)
+                    {
+                        comment = "knotted penis";
+                        return -1;
+                    }
+                    if (penis_type_index == 3)
+                    {
+                        comment = "knotted horse shaft";
+                        return -1;
+                    }
                     return 2;
                 case "glans":
                     comment = "layer 2 (tip/extension)";
@@ -4025,18 +4286,25 @@ function func_get_futa_frame(arg0, arg1)
                 comment = "pussy";
                 return 23;
             case "shaft":
-                comment = "layer 1 (base/sheath) - safe fallback to base shaft if custom spritesheet lacks pill frames";
-                var _spr_frames = sprite_get_number(top_sprite);
-                if (penis_type_index == 1 && _spr_frames > 11)
+                comment = "layer 1 (base/sheath)";
+                if (penis_type_index == 0)
                 {
+                    comment = "human shaft";
+                    return 7;
+                }
+                if (penis_type_index == 1)
+                {
+                    comment = "horse sheath";
                     return 11;
                 }
-                if (penis_type_index == 2 && _spr_frames > 15)
+                if (penis_type_index == 2)
                 {
+                    comment = "knotted penis full";
                     return 15;
                 }
-                if (penis_type_index == 3 && _spr_frames > 18)
+                if (penis_type_index == 3)
                 {
+                    comment = "knotted horse full";
                     return 18;
                 }
                 return 7;
@@ -4461,6 +4729,16 @@ function func_randomize_top(arg0 = -1, arg1 = -1)
         sprite_delete(legacy_bc_crest);
     }
     legacy_bc_crest = -1;
+    if (sprite_exists(custom_sperm_sprite))
+    {
+        sprite_delete(custom_sperm_sprite);
+    }
+    custom_sperm_sprite = -1;
+    if (sprite_exists(custom_sperm_big_sprite))
+    {
+        sprite_delete(custom_sperm_big_sprite);
+    }
+    custom_sperm_big_sprite = -1;
     top_sprite = sFutaMatingPress;
     hair_sprite = choose(sFutaMatingPress, sFutaMatingPress2, sFutaMatingPress3, sFutaMatingPress4, sFutaMatingPressAndroid, sFutaMatingPressDevil, sFutaMatingPressClown);
     face_sprite = choose(sFutaPortrait1, sFutaPortrait2, sFutaPortrait3, sFutaPortrait4);
@@ -4813,6 +5091,7 @@ function func_apply_custom_futa_stats()
         bangs_sprite = face_sprite;
         condom_offset_mpress = custom_condom_offset_mpress;
         condom_offset_cowgirls = custom_condom_offset_cowgirls;
+        condom_offset_deepthroat = custom_condom_offset_deepthroat;
     }
     else
     {
@@ -4823,6 +5102,7 @@ function func_apply_custom_futa_stats()
         bangs_sprite = face_sprite;
         condom_offset_mpress = custom_condom_offset_mpress;
         condom_offset_cowgirls = custom_condom_offset_cowgirls;
+        condom_offset_deepthroat = custom_condom_offset_deepthroat;
     }
     top_hair = 16777215;
     top_skin = 16777215;
@@ -6010,7 +6290,7 @@ function func_mp_cum_tip_offset(arg0 = 0)
         var _dt_scale_y = (image_yscale - top_breath) * top_penis_length;
         var _dt_y = (38 + (20 * (5 * top_breath))) - (thrust * 16);
         var _dt_twin_off = _tip_twin ? -8 : 0;
-        return _dt_y + (79 * _dt_scale_y) + _dt_twin_off + custom_cum_y_offset;
+        return _dt_y + (79 * _dt_scale_y) + _dt_twin_off + custom_cum_y_offset + custom_cum_y_offset_dt;
     }
     if (sex_position > 0)
     {
@@ -6026,10 +6306,10 @@ function func_mp_cum_tip_offset(arg0 = 0)
         {
             _cg_rot = _tip_twin ? _tip_rot : -_tip_rot;
         }
-        return (_cg_py - (dcos(_cg_rot) * 57 * _cg_scale_y) - y) + custom_cum_y_offset;
+        return (_cg_py - (dcos(_cg_rot) * 57 * _cg_scale_y) - y) + custom_cum_y_offset + custom_cum_y_offset_cg;
     }
     var _mp_scale_y = (image_yscale - top_breath) * top_penis_length * custom_mating_press_scale;
-    return ((79 * _mp_scale_y) - (thrust * 32) - (_tip_twin ? 8 : 0)) + custom_cum_y_offset;
+    return ((79 * _mp_scale_y) - (thrust * 32) - (_tip_twin ? 8 : 0)) + custom_cum_y_offset + custom_cum_y_offset_mp;
 }
 
 function func_mp_cum_tip_x(arg0 = 0)
@@ -6582,7 +6862,11 @@ function func_texture_pack_replace(arg0)
 {
     for (var i = 0; i < array_length(sprite_list); i++)
     {
-        var _filename = "texture_packs/" + arg0 + "/" + sprite_get_name(sprite_list[i]) + ".png";
+        var _filename = "custom_stuff/texture_packs/" + arg0 + "/" + sprite_get_name(sprite_list[i]) + ".png";
+        if (!file_exists(_filename))
+        {
+            _filename = "texture_packs/" + arg0 + "/" + sprite_get_name(sprite_list[i]) + ".png";
+        }
         if (file_exists(_filename))
         {
             sprite_replace(sprite_list[i], _filename, global.sprite_backup[i].frames, false, false, global.sprite_backup[i].xorig, global.sprite_backup[i].yorig);
@@ -6613,8 +6897,14 @@ function func_texture_pack_backup_vanilla()
 
 function func_list_texture_packs()
 {
-    var _dir = "texture_packs/";
+    var _dir = "custom_stuff/texture_packs/";
     var _file = tc_ff_first(_dir + "*", 16);
+    if (_file == "")
+    {
+        tc_ff_close();
+        _dir = "texture_packs/";
+        _file = tc_ff_first(_dir + "*", 16);
+    }
     var _packs = [];
     var has_default = false;
     while (_file != "")

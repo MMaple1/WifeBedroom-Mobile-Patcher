@@ -1603,6 +1603,11 @@ switch (sex_position)
                     c_sprite = legacy_custom_condom;
                 }
             }
+            if (broken_condom == true && custom_condom_broken != -1 && sprite_exists(custom_condom_broken))
+            {
+                c_sprite = custom_condom_broken;
+                p_broken = 0;
+            }
             if (custom_condom_scale <= 0 || custom_condom_scale != custom_mating_press_scale)
             {
                 custom_condom_scale = custom_mating_press_scale;
@@ -2018,11 +2023,11 @@ switch (sex_position)
         var _mp_clench_frame = floor(_mp_anim_t * 4);
         var _mp_is_vanilla = top_sprite != custom_mating_press && top_sprite != legacy_custom_mating_press;
         var _bc_mp_off_x = -b_scale_x;
-        var _bc_mp_off_y = 44.5 * b_scale_y;
+        var _bc_mp_off_y = (44.5 * b_scale_y) + (custom_bc_mp_off_y * b_scale_y);
         if (!is_legacy_custom)
         {
             _bc_mp_off_x = -b_scale_x;
-            _bc_mp_off_y = (41 + custom_bc_mp_off_y) * b_scale_y;
+            _bc_mp_off_y = (41 * b_scale_y) + (custom_bc_mp_off_y * b_scale_y);
         }
         if (_f_balls != -1)
         {
@@ -2265,6 +2270,11 @@ switch (sex_position)
                 {
                     c_sprite = legacy_custom_condom;
                 }
+            }
+            if (broken_condom == true && custom_condom_broken != -1 && sprite_exists(custom_condom_broken))
+            {
+                c_sprite = custom_condom_broken;
+                p_broken = 1;
             }
             if (custom_condom_scale <= 0)
             {
@@ -2601,11 +2611,11 @@ switch (sex_position)
         var _cg_clench_frame = floor(_cg_anim_t * 4);
         var _cg_is_vanilla = top_sprite != custom_mating_press && top_sprite != legacy_custom_mating_press;
         var _bc_cg_off_x = -base_scale_x;
-        var _bc_cg_off_y = 29 * base_scale_y;
+        var _bc_cg_off_y = (29 * base_scale_y) + (custom_bc_rc_off_y * base_scale_y);
         if (!is_legacy_custom)
         {
             _bc_cg_off_x = -base_scale_x;
-            _bc_cg_off_y = 28 * base_scale_y;
+            _bc_cg_off_y = (28 * base_scale_y) + (custom_bc_rc_off_y * base_scale_y);
         }
         if (_f_balls != -1)
         {
@@ -2865,6 +2875,11 @@ switch (sex_position)
                 {
                     c_sprite = legacy_custom_condom;
                 }
+            }
+            if (broken_condom == true && custom_condom_broken != -1 && sprite_exists(custom_condom_broken))
+            {
+                c_sprite = custom_condom_broken;
+                p_broken = 1;
             }
             if (custom_condom_scale <= 0)
             {
@@ -3144,11 +3159,11 @@ switch (sex_position)
         var _rc_clench_frame = floor(_rc_anim_t * 4);
         var _rc_is_vanilla = top_sprite != custom_mating_press && top_sprite != legacy_custom_mating_press;
         var _bc_rc_off_x = -b_scale_x;
-        var _bc_rc_off_y = 29 * b_scale_y;
+        var _bc_rc_off_y = (29 * b_scale_y) + (custom_bc_cg_off_y * b_scale_y);
         if (!is_legacy_custom)
         {
             _bc_rc_off_x = -b_scale_x;
-            _bc_rc_off_y = 28 * b_scale_y;
+            _bc_rc_off_y = (28 * b_scale_y) + (custom_bc_cg_off_y * b_scale_y);
         }
         if (_f_balls != -1)
         {
@@ -3582,6 +3597,7 @@ switch (sex_position)
                 }
             }
             var dt_c_sprite = sFutaCondom;
+            var dt_p_broken = p_broken;
             if (penis_sprite == custom_futa_deepthroat)
             {
                 dt_c_sprite = penis_sprite;
@@ -3607,6 +3623,11 @@ switch (sex_position)
                 {
                     dt_c_sprite = legacy_custom_condom;
                 }
+            }
+            if (broken_condom == true && custom_condom_broken != -1 && sprite_exists(custom_condom_broken))
+            {
+                dt_c_sprite = custom_condom_broken;
+                dt_p_broken = 0;
             }
             var _dt_shaft_frame = (penis_sprite == custom_futa_deepthroat) ? func_get_futa_frame("shaft", 0) : 7;
             if (diphallia_pill == true)
@@ -3640,10 +3661,10 @@ switch (sex_position)
                         draw_sprite_ext(sFutaCondom, balloon_id, tip_x, tip_y, (image_xscale - top_breath) * (balloon_size + condom_jiggle), (image_yscale + top_breath) * (balloon_size - condom_jiggle), 0, _condom_blend, futa_ghost_alpha);
                     }
                 }
-                if (broken_condom == true && p_broken != -1)
+                if (broken_condom == true && dt_p_broken != -1)
                 {
                     comment = "deepthroat diphallia twin broken condom";
-                    draw_sprite_ext(dt_c_sprite, p_broken, x, dt_twin_y, dt_scale_x, dt_scale_y, -dt_penis_rotate, condom_color, futa_ghost_alpha);
+                    draw_sprite_ext(dt_c_sprite, dt_p_broken, x, dt_twin_y, dt_scale_x, dt_scale_y, -dt_penis_rotate, condom_color, futa_ghost_alpha);
                 }
             }
             draw_sprite_ext(penis_sprite, _dt_shaft_frame, x, dt_penis_y, dt_scale_x, dt_scale_y, (diphallia_pill == true) ? dt_penis_rotate : 0, top_skin, futa_ghost_alpha);
@@ -3679,7 +3700,7 @@ switch (sex_position)
                 if (broken_condom == true)
                 {
                     comment = "deepthroat broken condom";
-                    draw_sprite_ext(dt_c_sprite, p_broken, x, dt_penis_y, dt_scale_x, dt_scale_y, dt_base_rot, condom_color, futa_ghost_alpha);
+                    draw_sprite_ext(dt_c_sprite, dt_p_broken, x, dt_penis_y, dt_scale_x, dt_scale_y, dt_base_rot, condom_color, futa_ghost_alpha);
                 }
             }
         }
@@ -3708,11 +3729,11 @@ switch (sex_position)
         var _dt_clench_frame = floor(_dt_anim_t * 4);
         var _dt_is_vanilla = top_sprite != custom_mating_press && top_sprite != legacy_custom_mating_press;
         var _bc_dt_off_x = -_dt_ball_base_x;
-        var _bc_dt_off_y = 44 * _dt_ball_base_y;
+        var _bc_dt_off_y = (44 * _dt_ball_base_y) + (custom_bc_dt_off_y * _dt_ball_base_y);
         if (!is_legacy_custom)
         {
             _bc_dt_off_x = -_dt_ball_base_x;
-            _bc_dt_off_y = (19 + custom_bc_mp_off_y) * _dt_ball_base_y;
+            _bc_dt_off_y = (19 * _dt_ball_base_y) + (custom_bc_dt_off_y * _dt_ball_base_y);
         }
         if (custom_clench_toggle >= 1 && orgasm == false && ec_active == true && _dt_is_vanilla)
         {
@@ -5383,6 +5404,11 @@ if (insert == true && xray == true && is_female && sex_position != 3 && !(title 
                     _lx = (sprite_exists(legacy_xray_sprite) && legacy_xray_sprite != -1) ? legacy_xray_sprite : sFutaXray;
                     draw_sprite_ext(_lx, 2, x + xray_offset, draw_y, (1 + balls_jiggle) * top_penis_width, top_penis_length, 0, condom_color, 1);
                 }
+                if (broken_condom == true && legacy_custom_xray_broken != -1 && sprite_exists(legacy_custom_xray_broken))
+                {
+                    comment = "legacy x-ray broken condom";
+                    draw_sprite_ext(legacy_custom_xray_broken, 0, x + xray_offset, draw_y, (1 + balls_jiggle) * top_penis_width, top_penis_length, 0, condom_color, 1);
+                }
             }
         }
     }
@@ -6366,13 +6392,31 @@ if (orgasm == true)
                 condom_jiggle = -shot_condom_jiggle_per_particle * _shots_this_burst;
                 if (condom_break_toggle == true && condom_volume > condom_break_threshold)
                 {
+                    var _burst_volume = condom_volume;
                     condom = false;
                     broken_condom = true;
-                    fill_amount = condom_volume;
+                    if (insert == true)
+                    {
+                        fill_amount = _burst_volume;
+                    }
                     condom_volume = 0;
+                    condom_size = 0;
                     shot_queue = 0;
                     condom_strain_played = false;
                     func_play_condom_break_sfx();
+                    if (insert == false)
+                    {
+                        var cum_amount = min(round(4 * cum_splash * _burst_volume), 20);
+                        cum_amount = round(cum_amount * cum_shot_mult);
+                        repeat (cum_amount)
+                        {
+                            var _mp_tip = func_mp_next_tip();
+                            var cum = instance_create_depth(x + func_mp_cum_tip_x(_mp_tip), y + func_mp_cum_tip_offset(_mp_tip), depth, oCum);
+                            cum.hsp = random_range(-0.5, 0.5) * edge_boost;
+                            cum.vsp = (1.5 + random_range(0, 0.5)) * (edge_boost / 3);
+                            cum.cum_color = cum_color;
+                        }
+                    }
                 }
             }
             if (shot_internal == true && xray == true && insert == true)
@@ -6698,7 +6742,7 @@ if (orgasm == true)
                                 orgasm_last_moan = _snd_roll;
                             }
                         }
-                        if (orgasm_pumps > 2 && orgasm_pumps <= 3)
+                        if (orgasm_pumps > 2 && orgasm_pumps <= 2)
                         {
                             oAudioManager.play_voice(sndFutaOrgasm_grunt2, 110, random_range(0.85, 1.05), 0.8);
                         }
@@ -6844,15 +6888,19 @@ if (orgasm == true)
             }
             if (condom_break_toggle == true && condom == true && condom_volume > condom_break_threshold)
             {
+                var _burst_volume = condom_volume;
                 condom = false;
                 broken_condom = true;
-                fill_amount = condom_volume;
+                if (insert == true)
+                {
+                    fill_amount = _burst_volume;
+                }
                 condom_volume = 0;
                 condom_strain_played = false;
                 func_play_condom_break_sfx();
                 if (insert == false)
                 {
-                    var cum_amount = min(round(4 * cum_splash * fill_amount), 20);
+                    var cum_amount = min(round(4 * cum_splash * _burst_volume), 20);
                     cum_amount = round(cum_amount * cum_shot_mult);
                     repeat (cum_amount)
                     {
@@ -7739,7 +7787,8 @@ if (title == false && start_timer < 1)
     var spacing = 13;
     var wife_climax_pct = "CLIMAX: " + string(clamp(round((wife_pleasure / wife_pleasure_threshold) * 100), 0, 100)) + "%";
     var _edge_hint = orgasm == false && insert == true && sex_progress >= (0.8 * sex_progress_max) && edge_boost < edge_boost_max;
-    draw_set_color(_edge_hint ? make_color_rgb(255, 105, 180) : c_white);
+    var _enc_hint = orgasm == true && encouraged == false && orgasm_pumps <= 3;
+    draw_set_color((_edge_hint || _enc_hint) ? make_color_rgb(255, 105, 180) : c_white);
     draw_text(right_x, start_y, plap_string);
     draw_set_color(c_white);
     draw_text(right_x, start_y + spacing, slap_string);
@@ -8046,14 +8095,14 @@ if (title == false && start_timer < 1 && portrait_number == 0)
     {
         draw_sprite_ext(sFutaPortraitBunnyClothes, 2, portrait_x, portrait_y + (top_breath * 64), 1, 1, 0, outfit_body_color, 1);
     }
-    var futa_boob_press = point_in_rectangle(mouse_x, mouse_y, (portrait_x - 34) + custom_boob_x_offset, portrait_y + 20 + custom_boob_y_offset, portrait_x + 41 + custom_boob_x_offset, portrait_y + 52 + custom_boob_y_offset);
+    var futa_boob_press = point_in_rectangle(mouse_x, mouse_y, (portrait_x - 38) + custom_boob_x_offset, portrait_y + 20 + custom_boob_y_offset, portrait_x + 38 + custom_boob_x_offset, portrait_y + 52 + custom_boob_y_offset);
     comment = "layer 13: fore bangs (mapped to vanilla index 9)";
     if (sprite_exists(bangs_sprite) && bangs_sprite != -1)
     {
         draw_sprite_ext(bangs_sprite, (top_sprite == custom_mating_press && top_sprite != legacy_custom_mating_press) ? 13 : 9, portrait_x + face_x, portrait_y + (top_breath * 64) + face_y, 1 * custom_portrait_scale, 1 * custom_portrait_scale, 0, top_hair, 1);
     }
-    futa_boob_press = point_in_rectangle(mouse_x, mouse_y, (portrait_x - 34) + custom_boob_x_offset, portrait_y + 20 + custom_boob_y_offset, portrait_x + 41 + custom_boob_x_offset, portrait_y + 52 + custom_boob_y_offset);
-    if (futa_boob_press == true && options_toggle == false && portrait_number == 0 && (manual_mode == 0 || manual_cursor_free == true))
+    futa_boob_press = point_in_rectangle(mouse_x, mouse_y, (portrait_x - 38) + custom_boob_x_offset, portrait_y + 20 + custom_boob_y_offset, portrait_x + 38 + custom_boob_x_offset, portrait_y + 52 + custom_boob_y_offset);
+    if (futa_boob_press == true && options_toggle == false && offset_panel_mode == "" && portrait_number == 0 && (manual_mode == 0 || manual_cursor_free == true))
     {
         if (mouse_check_button_pressed(mb_left))
         {
@@ -8254,7 +8303,7 @@ if (title == false && start_timer < 1 && portrait_number == 1)
         draw_sprite_ext(wife_bangs_sprite, 9, portrait_x + face_x, portrait_y + (bottom_breath * 64) + face_y, 1 * custom_wife_portrait_scale, 1 * custom_wife_portrait_scale, 0, bottom_hair, 1);
     }
     var wife_boob_press = point_in_rectangle(mouse_x, mouse_y, (portrait_x - 34) + custom_boob_x_offset, portrait_y + 20 + custom_boob_y_offset, portrait_x + 41 + custom_boob_x_offset, portrait_y + 52 + custom_boob_y_offset);
-    if (wife_boob_press == true && mouse_check_button_pressed(mb_left) && options_toggle == false && portrait_number == 1 && (manual_mode == 0 || manual_cursor_free == true))
+    if (wife_boob_press == true && mouse_check_button_pressed(mb_left) && options_toggle == false && offset_panel_mode == "" && portrait_number == 1 && (manual_mode == 0 || manual_cursor_free == true))
     {
         oAudioManager.play_sfx(choose(sndSlosh1, sndSlosh2, sndSlosh3), 0, 1, 0.5);
         bottom_boob_jiggle = 3;
@@ -8289,7 +8338,7 @@ if (title == false && start_timer < 1 && futa_selector_open == false && orgasm =
         draw_set_font(fntFontSmall);
         draw_set_halign(fa_center);
         draw_sprite_ext(sButtonBack, 0, portrait_x + 103, portrait_y + 24, 8.5, 6, 0, c_white, 0.5);
-        var ringstats = [clamp(0.5 + (((top_penis_length - 1) / ((top_penis_length < 1) ? 0.19999999999999996 : 0.30000000000000004)) * 0.5), 0, 1), clamp(0.5 + (((top_penis_width - 1) / ((top_penis_width < 1) ? 0.19999999999999996 : 0.30000000000000004)) * 0.5), 0, 1), clamp(0.5 + (((ball_size - 1) / ((ball_size < 1) ? 0.19999999999999996 : 0.30000000000000004)) * 0.5), 0, 1), clamp(0.5 + (((top_boob_size - 1) / ((top_boob_size < 1) ? 0.19999999999999996 : 0.30000000000000004)) * 0.5), 0, 1), clamp(0.5 + (((top_ass_size - 1) / ((top_ass_size < 1) ? 0.19999999999999996 : 0.30000000000000004)) * 0.5), 0, 1), clamp(0.5 + (((cum_volume_modifier - 1) / ((cum_volume_modifier < 1) ? 0.19999999999999996 : 0.30000000000000004)) * 0.5), 0, 1), clamp(0.5 + (((virility_modifier - 1) / ((virility_modifier < 1) ? 0.19999999999999996 : 0.30000000000000004)) * 0.5), 0, 1)];
+        var ringstats = [clamp(0.5 + (((top_penis_length - 1) / ((top_penis_length < 1) ? 0.2 : 0.3)) * 0.5), 0, 1), clamp(0.5 + (((top_penis_width - 1) / ((top_penis_width < 1) ? 0.2 : 0.3)) * 0.5), 0, 1), clamp(0.5 + (((ball_size - 1) / ((ball_size < 1) ? 0.2 : 0.3)) * 0.5), 0, 1), clamp(0.5 + (((top_boob_size - 1) / ((top_boob_size < 1) ? 0.2 : 0.3)) * 0.5), 0, 1), clamp(0.5 + (((top_ass_size - 1) / ((top_ass_size < 1) ? 0.2 : 0.3)) * 0.5), 0, 1), clamp(0.5 + (((cum_volume_modifier - 1) / ((cum_volume_modifier < 1) ? 0.2 : 0.3)) * 0.5), 0, 1), clamp(0.5 + (((virility_modifier - 1) / ((virility_modifier < 1) ? 0.2 : 0.3)) * 0.5), 0, 1)];
         var ringlabels = ["LENGTH", "GIRTH", "BALLS", "BREASTS", "ASS", "VOLUME", "VIRILITY"];
         draw_radar_chart(portrait_x + 101, portrait_y + 26, 35, ringstats, ringlabels, 0, 4, oDialogueManager.top_dialogue_color);
         draw_set_font(fntFontBig);
@@ -8579,6 +8628,32 @@ if (title == false && start_timer < 1 && futa_selector_open == false && orgasm =
                         custom_lover_toggle = false;
                         break;
                 }
+                if (custom_lover_toggle == false)
+                {
+                    custom_kiss_x_offset = 0;
+                    custom_kiss_y_offset = 0;
+                    custom_boob_x_offset = 0;
+                    custom_boob_y_offset = 0;
+                    custom_headpat_x_offset = 0;
+                    custom_headpat_y_offset = 0;
+                    futa_saved_kiss_x_offset = 0;
+                    futa_saved_kiss_y_offset = 0;
+                    futa_saved_boob_x_offset = 0;
+                    futa_saved_boob_y_offset = 0;
+                    futa_saved_headpat_x_offset = 0;
+                    futa_saved_headpat_y_offset = 0;
+                    custom_cum_y_offset = 0;
+                    custom_cum_y_offset_mp = 0;
+                    custom_cum_y_offset_cg = 0;
+                    custom_cum_y_offset_dt = 0;
+                    custom_xray_offset_y = 0;
+                    custom_condom_offset_mpress = 0;
+                    custom_condom_offset_cowgirls = 0;
+                    custom_condom_offset_deepthroat = 0;
+                    condom_offset_mpress = 0;
+                    condom_offset_cowgirls = 0;
+                    condom_offset_deepthroat = 0;
+                }
                 top_skin_color_val = item_hover_1 ? random_range(200, 500) : (item_hover_2 ? random_range(175, 200) : (item_hover_3 ? random_range(80, 150) : -1));
                 if (!custom_lover_toggle)
                 {
@@ -8775,7 +8850,7 @@ if (top_sprite == sFutaMatingBunny && title == false && start_timer < 1)
     }
 }
 comment = "portrait kiss";
-if (mouse_check_button_pressed(mb_left) && kiss_box == true && title == false && sex_position < 2 && (manual_mode == 0 || manual_cursor_free == true))
+if (mouse_check_button_pressed(mb_left) && kiss_box == true && title == false && offset_panel_mode == "" && sex_position < 2 && (manual_mode == 0 || manual_cursor_free == true))
 {
     kiss_timer = 648;
     oDialogueManager.top_dialogue_timer = -1;
@@ -9223,7 +9298,7 @@ if (options_toggle == true && futa_selector_open == false)
     if (dialogue_menu_toggle == false)
     {
         var options_page_count = 10;
-        var options_titles = ["TYPES", "SIZES", "RESPONSES", "COLOURS", "MECHANICS", "VALUES", "VALUES 2", "FEATURES", "GENERAL", "BACKGROUND"];
+        var options_titles = ["TYPES", "SIZES", "RESPONSES", "COLOURS", "MECHANICS", "VALUES", "VALUES 2", "FEATURES", "AUDIO", "BACKGROUND"];
         var _bg_is_custom = instance_exists(oBackground) && oBackground.custom_background_enabled;
         if (_bg_is_custom && options_page == 9)
         {
@@ -9476,6 +9551,25 @@ if (options_toggle == true && futa_selector_open == false)
                         ds_list_clear(moan_fast_list);
                         ds_list_clear(orgasm_list);
                         moan_previous = -1;
+                        custom_kiss_x_offset = 0;
+                        custom_kiss_y_offset = 0;
+                        custom_boob_x_offset = 0;
+                        custom_boob_y_offset = 0;
+                        custom_headpat_x_offset = 0;
+                        custom_headpat_y_offset = 0;
+                        futa_saved_kiss_x_offset = 0;
+                        futa_saved_kiss_y_offset = 0;
+                        futa_saved_boob_x_offset = 0;
+                        futa_saved_boob_y_offset = 0;
+                        futa_saved_headpat_x_offset = 0;
+                        futa_saved_headpat_y_offset = 0;
+                        custom_cum_y_offset = 0;
+                        custom_cum_y_offset_mp = 0;
+                        custom_cum_y_offset_cg = 0;
+                        custom_cum_y_offset_dt = 0;
+                        custom_condom_offset_mpress = 0;
+                        custom_condom_offset_cowgirls = 0;
+                        custom_condom_offset_deepthroat = 0;
                         func_randomize_top(choose(sFutaMatingPress, sFutaMatingFurry, sFutaMatingPressDevil, sFutaMatingPressAndroid, sFutaMatingPressSlime, sFutaMatingBunny, sFutaMatingPressClown, sFutaMatingPressAlien));
                     }
                     else
@@ -9564,6 +9658,18 @@ if (options_toggle == true && futa_selector_open == false)
                     if (custom_wife_toggle == false)
                     {
                         func_randomize_bottom(choose(sWifeMatingPress, sWifeMatingPressDevil, sWifeMatingPressSlime, sWifeMatingPressFurry, sWifeMatingPressAndroid));
+                        custom_kiss_x_offset = 0;
+                        custom_kiss_y_offset = 0;
+                        custom_boob_x_offset = 0;
+                        custom_boob_y_offset = 0;
+                        custom_headpat_x_offset = 0;
+                        custom_headpat_y_offset = 0;
+                        wife_saved_kiss_x_offset = 0;
+                        wife_saved_kiss_y_offset = 0;
+                        wife_saved_boob_x_offset = 0;
+                        wife_saved_boob_y_offset = 0;
+                        wife_saved_headpat_x_offset = 0;
+                        wife_saved_headpat_y_offset = 0;
                     }
                     else
                     {
@@ -11420,8 +11526,8 @@ if (options_toggle == true && futa_selector_open == false)
                 var mech_names = ["knotting", "inflation", "slip chance", "reenter timer", "condom break"];
                 var mech_vars = [knotted_max_time, womb_inflation_scale, slip_chance, reenter_max_timer, condom_break_threshold];
                 var mech_toggles = [knotting_toggle, womb_inflation_toggle, slip_toggle, reenter_toggle, condom_break_toggle];
-                var mech_min = [0, 0, 0, 0, 0];
-                var mech_max = [1200, 5, 5, 900, 20];
+                var mech_min = [0, 0, 0, 0, 1];
+                var mech_max = [1200, 5, 5, 900, 50];
                 for (i = 0; i < 5; i++)
                 {
                     var row_y = (options_y - 24) + (12 * i);
@@ -11688,7 +11794,7 @@ if (options_toggle == true && futa_selector_open == false)
                                 break;
                             case 4:
                                 condom_break_threshold = new_val;
-                                condom_break_toggle = slider_ratio < 1;
+                                condom_break_toggle = true;
                                 break;
                         }
                     }
@@ -13341,7 +13447,7 @@ if (options_toggle == true && futa_selector_open == false)
                 }
                 break;
             case 8:
-                comment = "GENERAL";
+                comment = "AUDIO";
                 draw_set_valign(fa_bottom);
                 draw_text_ext_transformed(options_x - 90, options_y - 31, "Audio", 10, 100, 0.6, 0.6, 0);
                 draw_text_ext_transformed(options_x + 74, options_y - 31, "Misc", 10, 100, 0.6, 0.6, 0);
@@ -16755,7 +16861,7 @@ if (cs_toggle == true && title == false && futa_selector_open == false && mob_ex
         draw_set_valign(fa_middle);
         draw_set_color(c_white);
         draw_text_ext_transformed(_kiss_toggle_x + 12, _kiss_toggle_y, cs_wife_kiss_enabled ? "ON" : "OFF", 12, 60, 0.5, 0.5, 0);
-        if (_kiss_box_hover && mouse_check_button_pressed(mb_left) && title == false)
+        if (_kiss_box_hover && mouse_check_button_pressed(mb_left) && title == false && offset_panel_mode == "")
         {
             cs_wife_kiss_enabled = !cs_wife_kiss_enabled;
             func_save_settings();
@@ -17515,13 +17621,16 @@ if (equine_pill != equine_pill_prev)
         max_loads -= m.max_loads;
     }
     penis_type_index = base_penis_type_index;
-    if (equine_pill)
+    if (!is_legacy_custom)
     {
-        penis_type_index |= 1;
-    }
-    if (knotted_pill)
-    {
-        penis_type_index |= 2;
+        if (equine_pill)
+        {
+            penis_type_index |= 1;
+        }
+        if (knotted_pill)
+        {
+            penis_type_index |= 2;
+        }
     }
     if (custom_lover_toggle == true || top_sprite == custom_mating_press || top_sprite == legacy_custom_mating_press)
     {
@@ -17569,13 +17678,16 @@ if (knotted_pill != knotted_pill_prev)
         max_loads -= m.max_loads;
     }
     penis_type_index = base_penis_type_index;
-    if (equine_pill)
+    if (!is_legacy_custom)
     {
-        penis_type_index |= 1;
-    }
-    if (knotted_pill)
-    {
-        penis_type_index |= 2;
+        if (equine_pill)
+        {
+            penis_type_index |= 1;
+        }
+        if (knotted_pill)
+        {
+            penis_type_index |= 2;
+        }
     }
     if (custom_lover_toggle == true || top_sprite == custom_mating_press || top_sprite == legacy_custom_mating_press)
     {
@@ -18012,7 +18124,7 @@ if (title_scale > 0.01)
         draw_set_font(fntFontSmall);
         draw_set_halign(fa_left);
         draw_set_valign(fa_top);
-        var version_string = "DEEPROOM 4.0 KIWAMI-EX TURBO HD TIGER DROPPED REMIX X-FACTOR: BIG CHUNGUS LEGACY";
+        var version_string = "DEEPROOM 4.0.3 KIWAMI-EX TURBO HD TIGER DROPPED REMIX X-FACTOR: BIG CHUNGUS LEGACY";
         if (custom_sprite_loaded == true)
         {
             version_string += ("\n\n" + string(ds_list_size(custom_futas_folder)) + " CUSTOM LOVER(S) LOADED");
@@ -18020,6 +18132,10 @@ if (title_scale > 0.01)
         if (custom_wife_sprite_loaded == true)
         {
             version_string += ("\n\n" + string(ds_list_size(custom_wives_folder)) + " CUSTOM WIFE(S) LOADED");
+        }
+        if (cs_futa_packs_loaded == true)
+        {
+            version_string += ("\n\n" + string(ds_list_size(cs_futa_packs)) + " CUSTOM VOICE PACK(S) LOADED");
         }
         if (oBackground.custom_background_loaded == true)
         {
@@ -18276,7 +18392,7 @@ else if (start_timer <= 0)
                     case "balls":
                         balls_jiggle = 0.2;
                         body_jiggle = -0.01;
-                        if (orgasm == true && orgasm_pumps <= 3 && encouraged == false)
+                        if (orgasm == true && encouraged == false && orgasm_pumps <= 2)
                         {
                             orgasm_pumps += orgasm_pumps_max;
                             ds_list_insert(score_combo_mods, 0, "ENCOURAGED [+5000]");
@@ -19966,8 +20082,8 @@ if (radial_menu_open && manual_mode > 0 && title == false && futa_selector_open 
                 }
                 else if (_si == 5)
                 {
-                    condom_break_threshold = round(lerp(0, 20, _st_new_ratio));
-                    condom_break_toggle = condom_break_threshold < 20;
+                    condom_break_threshold = round(lerp(1, 50, _st_new_ratio));
+                    condom_break_toggle = true;
                 }
                 else if (_si == 6)
                 {
@@ -20358,6 +20474,25 @@ if (radial_menu_open && manual_mode > 0 && title == false && futa_selector_open 
             ds_list_clear(moan_fast_list);
             ds_list_clear(orgasm_list);
             moan_previous = -1;
+            custom_kiss_x_offset = 0;
+            custom_kiss_y_offset = 0;
+            custom_boob_x_offset = 0;
+            custom_boob_y_offset = 0;
+            custom_headpat_x_offset = 0;
+            custom_headpat_y_offset = 0;
+            futa_saved_kiss_x_offset = 0;
+            futa_saved_kiss_y_offset = 0;
+            futa_saved_boob_x_offset = 0;
+            futa_saved_boob_y_offset = 0;
+            futa_saved_headpat_x_offset = 0;
+            futa_saved_headpat_y_offset = 0;
+            custom_cum_y_offset = 0;
+            custom_cum_y_offset_mp = 0;
+            custom_cum_y_offset_cg = 0;
+            custom_cum_y_offset_dt = 0;
+            custom_condom_offset_mpress = 0;
+            custom_condom_offset_cowgirls = 0;
+            custom_condom_offset_deepthroat = 0;
             func_randomize_top(choose(sFutaMatingPress, sFutaMatingFurry, sFutaMatingPressDevil, sFutaMatingPressAndroid, sFutaMatingPressSlime, sFutaMatingBunny, sFutaMatingPressClown, sFutaMatingPressAlien));
         }
         else
@@ -20440,6 +20575,18 @@ if (radial_menu_open && manual_mode > 0 && title == false && futa_selector_open 
         if (custom_wife_toggle == false)
         {
             func_randomize_bottom(choose(sWifeMatingPress, sWifeMatingPressDevil, sWifeMatingPressSlime, sWifeMatingPressFurry, sWifeMatingPressAndroid));
+            custom_kiss_x_offset = 0;
+            custom_kiss_y_offset = 0;
+            custom_boob_x_offset = 0;
+            custom_boob_y_offset = 0;
+            custom_headpat_x_offset = 0;
+            custom_headpat_y_offset = 0;
+            wife_saved_kiss_x_offset = 0;
+            wife_saved_kiss_y_offset = 0;
+            wife_saved_boob_x_offset = 0;
+            wife_saved_boob_y_offset = 0;
+            wife_saved_headpat_x_offset = 0;
+            wife_saved_headpat_y_offset = 0;
         }
         else
         {
@@ -20706,10 +20853,10 @@ if (keyboard_check(ord("H")) && title == false)
     draw_set_alpha(1);
     draw_set_color(_kiss_hover ? _col_hover : _col_idle);
     draw_rectangle(_kiss_x1, _kiss_y1, _kiss_x2, _kiss_y2, true);
-    var _boob_x1 = 10 + custom_boob_x_offset;
-    var _boob_y1 = (room_height - 58) + custom_boob_y_offset;
-    var _boob_x2 = 87 + custom_boob_x_offset;
-    var _boob_y2 = (room_height - 25) + custom_boob_y_offset;
+    var _boob_x1 = (portrait_x - 38) + custom_boob_x_offset;
+    var _boob_y1 = portrait_y + 20 + custom_boob_y_offset;
+    var _boob_x2 = portrait_x + 38 + custom_boob_x_offset;
+    var _boob_y2 = portrait_y + 52 + custom_boob_y_offset;
     var _boob_hover = point_in_rectangle(mouse_x, mouse_y, _boob_x1, _boob_y1, _boob_x2, _boob_y2);
     draw_set_color(_boob_hover ? _col_hover : _col_idle);
     draw_set_alpha(_alpha);
@@ -20782,6 +20929,48 @@ if (keyboard_check(ord("H")) && title == false)
     draw_set_alpha(1);
     draw_set_color(_head_hover ? _col_hover : _col_idle);
     draw_rectangle(_head_x1, _head_y1, _head_x2, _head_y2, true);
+    if (custom_lover_toggle)
+    {
+        var _cum_tip_cy = y + func_mp_cum_tip_offset(0);
+        var _cum_hb_x1 = x - 3;
+        var _cum_hb_y1 = _cum_tip_cy - 3;
+        var _cum_hb_x2 = x + 3;
+        var _cum_hb_y2 = _cum_tip_cy + 3;
+        var _cum_hover = point_in_rectangle(mouse_x, mouse_y, _cum_hb_x1, _cum_hb_y1, _cum_hb_x2, _cum_hb_y2);
+        var _cum_col_idle = make_color_rgb(220, 200, 0);
+        var _cum_col_hover = make_color_rgb(220, 0, 0);
+        draw_set_color(_cum_hover ? _cum_col_hover : _cum_col_idle);
+        draw_set_alpha(_alpha);
+        draw_rectangle(_cum_hb_x1, _cum_hb_y1, _cum_hb_x2, _cum_hb_y2, false);
+        draw_set_alpha(1);
+        draw_set_color(_cum_hover ? _cum_col_hover : _cum_col_idle);
+        draw_rectangle(_cum_hb_x1, _cum_hb_y1, _cum_hb_x2, _cum_hb_y2, true);
+        var _con_scale_c_y = (((image_yscale - top_breath) * top_penis_length) + body_jiggle) * custom_condom_scale;
+        var _con_tip_y = (y - (thrust * 32)) + (79 * _con_scale_c_y) + condom_offset_mpress;
+        if (sex_position == 3)
+        {
+            _con_tip_y = (y - (thrust * 32)) + (79 * _con_scale_c_y) + condom_offset_deepthroat;
+        }
+        else if (sex_position > 0)
+        {
+            _con_tip_y = y + (79 * ((image_yscale - top_breath) * custom_cowgirl_scale)) + condom_offset_cowgirls;
+        }
+        var _con_hb_x1 = x - 3;
+        var _con_hb_y1 = _con_tip_y - 3;
+        var _con_hb_x2 = x + 3;
+        var _con_hb_y2 = _con_tip_y + 3;
+        var _con_hover = point_in_rectangle(mouse_x, mouse_y, _con_hb_x1, _con_hb_y1, _con_hb_x2, _con_hb_y2);
+        var _con_col_idle = make_color_rgb(0, 160, 255);
+        var _con_col_hover = 16777215;
+        draw_set_color(_con_hover ? _con_col_hover : _con_col_idle);
+        draw_set_alpha(_alpha);
+        draw_rectangle(_con_hb_x1, _con_hb_y1, _con_hb_x2, _con_hb_y2, false);
+        draw_set_alpha(1);
+        draw_set_color(_con_hover ? _con_col_hover : _con_col_idle);
+        draw_rectangle(_con_hb_x1, _con_hb_y1, _con_hb_x2, _con_hb_y2, true);
+    }
+    draw_set_color(c_white);
+    draw_set_alpha(1);
     draw_set_color(button_newlover_press ? _col_hover : _col_idle);
     draw_rectangle(portrait_x - 36, portrait_y + 48, portrait_x + 36, portrait_y + 72, true);
     draw_set_color(mm_press4 ? _col_hover : _col_idle);

@@ -214,12 +214,12 @@ function load_dialogue_file()
     {
         return false;
     }
-    var _file_name = "dialogue_packs/" + chosen_dialogue;
+    var _file_name = "custom_stuff/dialogue_packs/" + chosen_dialogue;  // Deeproom 4.0.3 location first
     if (!file_exists(_file_name))
     {
-        if (file_exists("custom_stuff/dialogue_packs/" + chosen_dialogue))
+        if (file_exists("dialogue_packs/" + chosen_dialogue))
         {
-            _file_name = "custom_stuff/dialogue_packs/" + chosen_dialogue;
+            _file_name = "dialogue_packs/" + chosen_dialogue;
         }
         else if (file_exists("custom_stuff/dialogue/" + chosen_dialogue))
         {

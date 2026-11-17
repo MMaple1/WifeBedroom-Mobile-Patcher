@@ -167,8 +167,8 @@ Open this script once to integrate all lifecycle, scaling, and initialization su
 - **`[DR-01]`**: Ingest `custom_futas/_manifest.txt` and `custom_wives/_manifest.txt` inside scanner functions.
 - **`[DR-02]`**: Define `tc_norm_path(path)` leading-slash normalizer.
 - **`[DR-05]`**: Ingest and save settings in `setting_data.sav` and `func_save_settings()`.
-- **`[DR-06]`**: Dynamic multi-frame slicer and `160 / frame_w` scale normalization in `func_load_custom_futa()`. `func_futa_pack_is_legacy()` chooses the loader, the same on PC and phone: standard names when `custom_mating_press.png` exists or `custom_futa_mating_press_0.png` is missing, otherwise the `_0.png` loader.
-- **`[DR-07]`**: Out-of-bounds frame guards in `func_get_futa_frame()`.
+- **`[DR-06]`**: `func_futa_pack_is_legacy()` chooses the loader, the same on PC and phone: standard names when `custom_mating_press.png` exists or `custom_futa_mating_press_0.png` is missing; then, as in native 4.0.3, `check_custom_image_size()` sends a 19-frame `custom_mating_press.png` to the `_0.png` loader when the pack has one. The standard-name mating press loads as native: 9 frames at `[sprite] mating_press_origin_x/y`, unscaled.
+- **`[DR-07]`**: `func_get_futa_frame()` is native 4.0.3 (no frame fallbacks).
 - **`[DR-08]`**: Disentangle `func_ovulate()` from `func_wife_climax()`.
 - **`[DR-09]`**: Initialize default `xray_origin_x = 80; xray_origin_y = 84;` in `func_load_custom_spouse()`.
 - **`[DR-12]`**: Every character switch clears both portrait slots (`custom_portrait` and `legacy_custom_portrait`, and the two partner slots) and sets the portrait scale, so no previous portrait can stay on screen.
@@ -532,41 +532,16 @@ Source: bundle_src/gml_Object_oFutaMatingPress_Create_0.gml, func_load_custom_sp
 - **Target Event**: `Create (0)` & `Draw (0)`
 - **Anchor**: `func_get_futa_frame` switch statements in `Create (0)`
 
-When rendering custom sprite layers, missing pill art frames fall back to default layers to prevent crashes and invisible anatomy. For position 0, shaft requests return frame 7 as a safe fallback layer, and condoms return frame 0. For position 1 (cowgirl), hands check against the sprite subimage count (`sprite_get_number(legacy_custom_cowgirl) > 6`) before returning frame index 6 or 4, and shaft falls back to frame 2:
+`func_get_futa_frame` is the native Deeproom 4.0.3 function, unchanged (2026-11-17). An earlier mobile change made missing pill frames fall back to base frames and made the standard-name "broken" condom return frame 0; that drew an intact condom as the broken one and was removed. A pill layer the pack does not have returns `-1`, and the draw code skips it, as on PC. A pack's own broken condom comes from `custom_condom_broken.png` (4.0.3), which the draw code uses as frame 0 or 1 of that sprite:
 
 ```gml
-                case "shaft":
-                    comment = "layer 1 (base/sheath) - safely falls back to base custom asset if pill art missing";
-                    return 7;
-                case "glans":
-                    comment = "layer 2 (tip/extension)";
+                case "broken":
+                    comment = "broken condom";
                     if (penis_type_index == 0)
                     {
-                        comment = "human glans";
+                        comment = "human broken condom";
                         return -1;
                     }
-                    if (penis_type_index == 1)
-                    {
-                        comment = "horse shaft";
-                        return -1;
-                    }
-                    if (penis_type_index == 2)
-                    {
-                        comment = "knot has no 2nd layer";
-                        return -1;
-                    }
-                    if (penis_type_index == 3)
-                    {
-                        comment = "knotted horse has no 2nd layer";
-                        return -1;
-                    }
-                    return -1;
-                case "condom":
-                    comment = "condom - safely falls back to base condom frame 0 if pill art missing";
-                    return 0;
-                case "broken":
-                    comment = "broken condom - safely falls back to frame 0 if pill art missing";
-                    return 0;
 ```
 
 Source: bundle_src/gml_Object_oFutaMatingPress_Create_0.gml, func_get_futa_frame
