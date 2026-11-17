@@ -40,6 +40,22 @@ function tc_is_save_path(arg0)
     return string_length(_gs) > 1 && string_pos(_gs, string(arg0)) == 1;
 }
 
+function tc_ini_open_desc(arg0)
+{
+    // Open a pack descriptor. On Android/iOS GameMaker reads a file from the save area when a copy exists there,
+    // and never again from the APK. Older builds opened custom_data.spouse even where it did not exist, which
+    // left an empty copy in the save area: every origin then fell back to its default (deepthroat 84 instead
+    // of the pack's 150). A shipped descriptor always has [sprite], so a copy without it is such a leftover:
+    // delete it and read the APK's file.
+    ini_open(arg0);
+    if ((os_type == os_android || os_type == os_ios) && !tc_is_save_path(arg0) && !ini_section_exists("sprite"))
+    {
+        ini_close();
+        file_delete(arg0);
+        ini_open(arg0);
+    }
+}
+
 function pm_registry_file()
 {
     var _s = game_save_id;
@@ -2081,9 +2097,9 @@ function func_load_custom_spouse(arg0)
     var xray_origin_x = 80;
     var xray_origin_y = 84;
     var _lcwx_fixed = false;
-    if (file_exists(string(arg0) + "/custom_data.spouse") || file_exists(string(arg0) + "/custom_data.wife") || (os_type == os_android || os_type == os_ios))
+    if (file_exists(string(arg0) + "/custom_data.spouse"))
     {
-        ini_open(string(arg0) + "/custom_data.spouse");  // native Deeproom: the spouse loader reads only .spouse
+        tc_ini_open_desc(string(arg0) + "/custom_data.spouse");  // native Deeproom: the spouse loader reads only .spouse
         sprite_origin_x = ini_read_real("sprite", "origin_x", 80);
         sprite_origin_y = ini_read_real("sprite", "origin_y", 84);
         portrait_origin_x = ini_read_real("portrait", "origin_x", 78);
@@ -2456,7 +2472,7 @@ function func_load_custom_wife(arg0, arg1 = 0)
     custom_wife_pain_response = 1;
     if (file_exists(string(arg0) + "/custom_data.wife"))
     {
-        ini_open(string(arg0) + "/custom_data.wife");
+        tc_ini_open_desc(string(arg0) + "/custom_data.wife");
         sprite_origin_x = ini_read_real("sprite", "origin_x", 80);
         sprite_origin_y = ini_read_real("sprite", "origin_y", 84);
         // Native Deeproom: the .wife loader reads only the flat [sprite] keys. Packs are tuned against that, so the
@@ -2598,7 +2614,7 @@ function func_load_custom_wife(arg0, arg1 = 0)
         var _cwx_fixed = false;
         if (file_exists(string(arg0) + "/custom_data.wife"))
         {
-            ini_open(string(arg0) + "/custom_data.wife");
+            tc_ini_open_desc(string(arg0) + "/custom_data.wife");
             _cwx_ox = ini_read_real("xray", "origin_x", ini_read_real("sprite", "xray_x", 80));
             _cwx_oy = ini_read_real("xray", "origin_y", ini_read_real("sprite", "xray_y", 84));
             _cwx_fixed = ini_key_exists("xray", "mobile_origin_x");
@@ -2995,7 +3011,7 @@ function func_load_custom_futa(arg0, arg1 = 0)
             custom_penis_type_index = 0;
             if (file_exists(string(arg0) + "/custom_data.futa"))
             {
-                ini_open(string(arg0) + "/custom_data.futa");
+                tc_ini_open_desc(string(arg0) + "/custom_data.futa");
                 sprite_origin_x = ini_read_real("sprite", "origin_x", 80);
                 sprite_origin_y = ini_read_real("sprite", "origin_y", 84);
                 cowgirl_origin_x = ini_read_real("sprite", "cowgirl_origin_x", sprite_origin_x);
@@ -3188,7 +3204,7 @@ function func_load_custom_futa(arg0, arg1 = 0)
                 var _lfm_oy = 84;
                 if (file_exists(string(arg0) + "/custom_data.futa"))
                 {
-                    ini_open(string(arg0) + "/custom_data.futa");
+                    tc_ini_open_desc(string(arg0) + "/custom_data.futa");
                     // Origin measured from the strip by the patcher at build time (shaft on the penis line); used exactly.
                     _lfm_fixed = ini_key_exists("xray", "mobile_origin_x");
                     if (_lfm_fixed)
@@ -3405,7 +3421,7 @@ function func_load_custom_futa(arg0, arg1 = 0)
     custom_dialogue_set_top = -1;
     if (file_exists(string(arg0) + "/custom_data.futa"))
     {
-        ini_open(string(arg0) + "/custom_data.futa");
+        tc_ini_open_desc(string(arg0) + "/custom_data.futa");
         sprite_origin_x = ini_read_real("sprite", "origin_x", 80);
         sprite_origin_y = ini_read_real("sprite", "origin_y", 84);
         cowgirl_origin_x = ini_read_real("sprite", "cowgirl_origin_x", sprite_origin_x);
@@ -3601,7 +3617,7 @@ function func_load_custom_futa(arg0, arg1 = 0)
         var _cfm_oy = (custom_xray_offset_y > 0) ? (84 - custom_xray_offset_y) : (84 + custom_xray_offset_y);
         if (file_exists(string(arg0) + "/custom_data.futa"))
         {
-            ini_open(string(arg0) + "/custom_data.futa");
+            tc_ini_open_desc(string(arg0) + "/custom_data.futa");
             // Origin measured from the strip by the patcher at build time (shaft on the penis line); used exactly.
             _cfm_fixed = ini_key_exists("xray", "mobile_origin_x");
             if (_cfm_fixed)
