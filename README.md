@@ -59,4 +59,6 @@ py -3 WB_Mobile_Patcher.py --validate-only "My Mod Folder"
 ```
 See DETAILS.md for all options.
 
+**Deeproom partners' deepthroat too high?** Packs converted for Deeproom before 2026-11-17 carry a `[deepthroat]` block that draws it 66-70 px high, on PC and in the APK. Before building, run `py -3 tools/repair_deepthroat.py "<Deeproom>/custom_stuff/custom_wives"` to list them and add `--apply` to fix them (originals are backed up to a zip next to the folder).
+
 For technical architecture and in-depth modding details, see DETAILS.md and core/TECHNICAL_SPECIFICATION.md.
