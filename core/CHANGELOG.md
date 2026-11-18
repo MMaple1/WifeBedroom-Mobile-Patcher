@@ -4,7 +4,7 @@ All notable changes to the **WB Mobile Patcher** tool are documented in this fil
 
 ---
 
-## [Version 1.2.2] - 2026-11-17
+## [Version 1.2.2] - 2026-11-18
 
 ### Highlights
 - **Every text patch reports when it does nothing.** 62 patches in `wbp/gml_patches.py` replaced game code silently: when the game's code did not contain their anchor they skipped without a trace. They now go through `guarded_replace` (or an `else` that records the miss), so the patch report lists them. Output is unchanged (golden harness identical for every engine); the v1.5, ModRoom and Deeproom builds still report no misses, while the dynamic patching path (PC `data.win` patched directly) now lists 22 (Deeproom) and 41 (ModRoom) more patches that never matched there. `tests/test_patch_guards.py` keeps new patches from being silent.

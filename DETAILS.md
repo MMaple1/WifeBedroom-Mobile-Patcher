@@ -150,7 +150,7 @@ usage: WB_Mobile_Patcher.py [-h] [-b BASE_APK] [-o OUTPUT] [-y] [--clean] [--fas
 - **GML Fallback Snippets:** Dynamic replacement scripts are stored as individual files under `core/gml_patches/<function>/<name>.gml` and read byte-for-byte. Line endings are enforced by `.gitattributes` as non-text binary data.
 - **Regression Testing:**
   - `python -m unittest discover -s tests`: Runs test suites, verifying that documentation excerpts match implementation code.
-  - `python tests/golden_harness.py`: Executes end-to-end builds against reference folders (`E:/MEGA/io` or via `--io`/`WBP_IO`), validating GML script hashes, APK contents, and patch anchor lists against `tests/golden.json`. Outputs `RESULT: IDENTICAL` on match.
+  - `python tests/golden_harness.py`: Executes end-to-end builds against reference folders (`../io` next to the repository, or `--io`/`WBP_IO`), validating GML script hashes, APK contents, and patch anchor lists against `tests/golden.json`. Outputs `RESULT: IDENTICAL` on match.
   - `python tests/golden_harness.py --record`: Updates reference hashes after intentional alterations. Missing test fixtures are marked skipped.
 
 ---

@@ -14,7 +14,7 @@ Usage:
   options: --patcher <path to WB_Mobile_Patcher.py>  --io <folder with the example games/APKs>
            --only deeproom,modroom33,v15,dyn_deeproom,dyn_modroom33
 
-Default inputs are the example folders in E:/MEGA/io (see SCENARIOS). Scenarios whose inputs
+Default inputs are the example folders in ../io next to the repository (see SCENARIOS). Scenarios whose inputs
 are missing are skipped and reported, never silently passed.
 """
 import argparse, hashlib, importlib.util, json, os, re, shutil, subprocess, sys, tempfile, time, zipfile
@@ -150,7 +150,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--record", action="store_true")
     ap.add_argument("--patcher", default=str(ROOT / "WB_Mobile_Patcher.py"))
-    ap.add_argument("--io", default=os.environ.get("WBP_IO", "E:/MEGA/io"))
+    ap.add_argument("--io", default=os.environ.get("WBP_IO", str(HERE.parent.parent / "io")))
     ap.add_argument("--golden", default=str(HERE / "golden.json"))
     ap.add_argument("--only", default="")
     a = ap.parse_args()
