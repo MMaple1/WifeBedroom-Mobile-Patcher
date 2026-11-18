@@ -319,7 +319,22 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                                 }
                             }
                         }
-                        if (pm_rm_kind == 2)
+                        // only report success when the files are really gone (the game never re-checked before)
+                        var _rm_left = false;
+                        if (pm_rm_kind == 1)
+                        {
+                            _rm_left = file_exists(pm_rm_path);
+                        }
+                        else
+                        {
+                            _rm_left = directory_exists(pm_rm_path) || file_exists(pm_rm_path + "/custom_data.futa") || file_exists(pm_rm_path + "/custom_data.wife") || file_exists(pm_rm_path + "/custom_data.spouse") || file_exists(pm_rm_path + "/custom_data.bedroom");
+                        }
+                        if (_rm_left)
+                        {
+                            pm_registry_add(pm_rm_path);
+                            pm_status = "Could not delete " + pm_rm_name + ": its files are still on the phone. Nothing was restarted.";
+                        }
+                        else if (pm_rm_kind == 2)
                         {
                             pm_status = "Removed " + pm_rm_name + ". A lover that was given this voice keeps it.";
                         }
