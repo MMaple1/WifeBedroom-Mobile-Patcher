@@ -1800,7 +1800,7 @@ Source: `wbp/packs.py`, `classify_custom_pack`
 
 - **Tools**:
   - `WB_Converters/Modded_to_WB_1.5` (Launcher: `Convert_to_WB_1.5.bat`)
-  - `WB_Converters/WB_1.5_to_Modded` (Launcher: `Convert_from_WB_1.5.bat`, plus `Repair_Deepthroat.bat`)
+  - `WB_Converters/WB_1.5_to_Modded` (Launcher: `Convert_from_WB_1.5.bat`; `--repair-deepthroat` fixes old Deeproom partners)
 
   Both live in the `WB_Converters` repository, next to this patcher.
 
