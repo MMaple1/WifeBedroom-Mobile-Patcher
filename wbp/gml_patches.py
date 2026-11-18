@@ -125,6 +125,8 @@ def patch_create_code(code, enable_toy_telemetry=False, opts=None):
     if 'working_directory + "/setting_data.sav"' in code:
         code = code.replace('working_directory + "/setting_data.sav"', '"setting_data.sav"')
         LOGGER.log("Create_0: Replaced working_directory path with persistent sandboxed setting_data.sav.", prefix="[+]")
+    else:
+        PATCH_MISSES.append("patch_create_code:working_directory_setting_data_sav")
 
     old_legacy_shaft_0 = gml("patch_create_code/old_legacy_shaft_0")
 
@@ -153,13 +155,13 @@ def patch_create_code(code, enable_toy_telemetry=False, opts=None):
     new_clench_save = '''ini_write_real("features", "custom_clench_toggle", custom_clench_toggle);
     ini_write_real("features", "continuous_toggle", continuous_toggle);'''
     if old_clench_save in code and 'ini_write_real("features", "continuous_toggle"' not in code:
-        code = code.replace(old_clench_save, new_clench_save, 1)
+        code = guarded_replace(code, old_clench_save, new_clench_save, "patch_create_code:old_clench_save", count=1)
 
     old_clench_load = 'custom_clench_toggle = ini_read_real("features", "custom_clench_toggle", 0);'
     new_clench_load = '''custom_clench_toggle = ini_read_real("features", "custom_clench_toggle", 0);
     continuous_toggle = bool(ini_read_real("features", "continuous_toggle", false));'''
     if old_clench_load in code and 'ini_read_real("features", "continuous_toggle"' not in code:
-        code = code.replace(old_clench_load, new_clench_load, 1)
+        code = guarded_replace(code, old_clench_load, new_clench_load, "patch_create_code:old_clench_load", count=1)
         LOGGER.log("Create_0: Added continuous_toggle persistence to setting_data.sav.", prefix="[+]")
 
     old_norm_find = gml("patch_create_code/old_norm_find")
@@ -167,12 +169,16 @@ def patch_create_code(code, enable_toy_telemetry=False, opts=None):
     if old_norm_find in code:
         code = code.replace(old_norm_find, new_norm_find, 1)
         LOGGER.log("Create_0: Injected leading slash removal in tc_norm_path for Android asset loading.", prefix="[+]")
+    else:
+        PATCH_MISSES.append("patch_create_code:old_norm_find")
 
     old_tc_target = gml("patch_create_code/old_tc_target")
     new_tc_target = gml("patch_create_code/new_tc_target")
     if old_tc_target in code:
         code = code.replace(old_tc_target, new_tc_target, 1)
         LOGGER.log("Create_0: Neutralized native file_find_first loops in tc_ff_first to eliminate Android filesystem hangs.", prefix="[+]")
+    else:
+        PATCH_MISSES.append("patch_create_code:old_tc_target")
 
     old_next_find = gml("patch_create_code/old_next_find")
     new_next_find = gml("patch_create_code/new_next_find")
@@ -438,14 +444,20 @@ def patch_create_code(code, enable_toy_telemetry=False, opts=None):
     old_clf = gml("patch_create_code/old_clf")
     new_clf = gml("patch_create_code/new_clf")
     if old_clf in code: code = code.replace(old_clf, new_clf, 1)
+    else:
+        PATCH_MISSES.append("patch_create_code:old_clf")
 
     old_clw = gml("patch_create_code/old_clw")
     new_clw = gml("patch_create_code/new_clw")
     if old_clw in code: code = code.replace(old_clw, new_clw, 1)
+    else:
+        PATCH_MISSES.append("patch_create_code:old_clw")
 
     old_ret_boobs = gml("patch_create_code/old_ret_boobs")
     new_ret_boobs = gml("patch_create_code/new_ret_boobs")
     if old_ret_boobs in code: code = code.replace(old_ret_boobs, new_ret_boobs, 1)
+    else:
+        PATCH_MISSES.append("patch_create_code:old_ret_boobs")
 
 
     if enable_toy_telemetry:
@@ -454,12 +466,8 @@ def patch_create_code(code, enable_toy_telemetry=False, opts=None):
         LOGGER.log("Create_0: Enabled ToyBridge UDP toy telemetry socket on port 45735.", prefix="[+]")
 
     # Initialize xray_origin_x and xray_origin_y in func_load_custom_spouse to prevent unset variable crash
-    code = code.replace('    var xray_origin_x, xray_origin_y;', '    var xray_origin_x = 80;\n    var xray_origin_y = 84;', 1)
-    code = code.replace(
-        'if (file_exists(string(arg0) + "/custom_data.spouse"))',
-        'if (file_exists(string(arg0) + "/custom_data.spouse") || file_exists(string(arg0) + "/custom_data.wife") || (os_type == os_android || os_type == os_ios))',
-        1
-    )
+    code = guarded_replace(code, '    var xray_origin_x, xray_origin_y;', '    var xray_origin_x = 80;\n    var xray_origin_y = 84;', "patch_create_code:var_xray_origin_x_xray_origin_y", count=1)
+    code = guarded_replace(code, 'if (file_exists(string(arg0) + "/custom_data.spouse"))', 'if (file_exists(string(arg0) + "/custom_data.spouse") || file_exists(string(arg0) + "/custom_data.wife") || (os_type == os_android || os_type == os_ios))', "patch_create_code:if_file_exists_string_arg0_custom_data_s", count=1)
 
     LOGGER.log("Create_0: Standardized all partner & spouse xray assets to base reference (160x168, 80, 84).", prefix="[+]")
 
@@ -480,6 +488,8 @@ def patch_step_code(code):
     if old_step_headpat in code:
         code = code.replace(old_step_headpat, new_step_headpat, 1)
         LOGGER.log("Step_0: Enabled all touch inputs and hovers with open panels.", prefix="[+]")
+    else:
+        PATCH_MISSES.append("patch_step_code:old_step_headpat")
 
     pattern = r'if\s*\(\s*variable_global_exists\("rg_chosen_pill"\)\s*&&\s*global\.rg_chosen_pill\s*==\s*"Rick_Astley"\s*\)\s*\{.*?\n\}'
     if re.search(pattern, code, flags=re.DOTALL):
@@ -494,7 +504,7 @@ def apply_hyper_sizes(code: str) -> str:
     hyper_anchor = 'comment = "lover sizes";'
     hyper_toggle = gml("apply_hyper_sizes/hyper_toggle")
     if hyper_anchor in code and "_tc_hx" not in code:
-        code = code.replace(hyper_anchor, hyper_anchor + "\n" + hyper_toggle, 1)
+        code = guarded_replace(code, hyper_anchor, hyper_anchor + "\n" + hyper_toggle, "apply_hyper_sizes:hyper_anchor", count=1)
         LOGGER.log("Draw_0: Added ToyBridge SIZES page HYPER toggle (2.5x range).", prefix="[+]")
     return code
 
@@ -555,14 +565,8 @@ else if (variable_instance_exists(id, "mob_expanded") && mob_expanded)
         code = 'if (!variable_instance_exists(id, "boob_box")) boob_box = false;\n' + code
         LOGGER.log("Draw_0: Initialized boob_box safety check upfront.", prefix="[+]")
 
-    code = code.replace(
-        "if (manual_mode == 0 && mouse_check_button_pressed(mb_right) && !hover_portrait && !boob_box && title == false)",
-        "if (manual_mode == 0 && mouse_check_button_pressed(mb_right) && !hover_portrait && (!variable_instance_exists(id, \"boob_box\") || !boob_box) && title == false)"
-    )
-    code = code.replace(
-        "else if (mouse_check_button_pressed(mb_right) && !hover_portrait && !boob_box && manual_mode == 0)",
-        "else if (mouse_check_button_pressed(mb_right) && !hover_portrait && (!variable_instance_exists(id, \"boob_box\") || !boob_box) && manual_mode == 0)"
-    )
+    code = guarded_replace(code, "if (manual_mode == 0 && mouse_check_button_pressed(mb_right) && !hover_portrait && !boob_box && title == false)", "if (manual_mode == 0 && mouse_check_button_pressed(mb_right) && !hover_portrait && (!variable_instance_exists(id, \"boob_box\") || !boob_box) && title == false)", "patch_draw_code:if_manual_mode_0_mouse_check_button_pres", count=-1)
+    code = guarded_replace(code, "else if (mouse_check_button_pressed(mb_right) && !hover_portrait && !boob_box && manual_mode == 0)", "else if (mouse_check_button_pressed(mb_right) && !hover_portrait && (!variable_instance_exists(id, \"boob_box\") || !boob_box) && manual_mode == 0)", "patch_draw_code:else_if_mouse_check_button_pressed_mb_ri", count=-1)
 
     old_mob_init = gml("patch_draw_code/old_mob_init")
 
@@ -575,17 +579,17 @@ else if (variable_instance_exists(id, "mob_expanded") && mob_expanded)
         PATCH_MISSES.append("patch_draw_code:old_mob_init")
 
     if "options_page = qi; func_save_settings();" not in code:
-        code = code.replace("options_page = qi;", "options_page = qi; func_save_settings();")
-        code = code.replace("options_page = _next_page;", "options_page = _next_page; func_save_settings();")
+        code = guarded_replace(code, "options_page = qi;", "options_page = qi; func_save_settings();", "patch_draw_code:options_page_qi", count=-1)
+        code = guarded_replace(code, "options_page = _next_page;", "options_page = _next_page; func_save_settings();", "patch_draw_code:options_page_next_page", count=-1)
 
     if "continuous_toggle = !continuous_toggle; func_save_settings();" not in code:
-        code = code.replace("continuous_toggle = !continuous_toggle;", "continuous_toggle = !continuous_toggle; func_save_settings();")
+        code = guarded_replace(code, "continuous_toggle = !continuous_toggle;", "continuous_toggle = !continuous_toggle; func_save_settings();", "patch_draw_code:continuous_toggle_continuous_toggle", count=-1)
 
     # Standardize runtime anatomy_sprite and xray_sprite resizers against base reference
     old_anat = "var anatomy_sprite = (wife_xray == -1) ? xray_sprite : wife_xray;"
     new_anat = gml("patch_draw_code/new_anat")
     if old_anat in code and "sprite_get_xoffset(anatomy_sprite)" not in code:
-        code = code.replace(old_anat, new_anat, 1)
+        code = guarded_replace(code, old_anat, new_anat, "patch_draw_code:old_anat", count=1)
         LOGGER.log("Draw_0: Standardized runtime anatomy and partner xray resizers to base (80, 84).", prefix="[+]")
 
     # Crash Prevention: Guards for custom_portrait draws (cures requested -1 crash)
@@ -641,41 +645,23 @@ else if (variable_instance_exists(id, "mob_expanded") && mob_expanded)
     code = guarded_replace(code, old_lpe, new_lpe, "patch_draw_code:old_lpe")
 
     # Safe fallbacks for boobs, face, mouth, bangs in Lover portrait
-    code = code.replace(
-        "draw_sprite_ext(func_get_portrait_boobs(top_sprite, 0), 2, portrait_x, _boob_y, _boob_xscale, _boob_yscale, 0, top_skin, 1);",
-        "var _lb_boob = func_get_portrait_boobs(top_sprite, 0); if (!sprite_exists(_lb_boob) || _lb_boob == -1) _lb_boob = _lover_base_portrait; draw_sprite_ext(_lb_boob, 2, portrait_x, _boob_y, _boob_xscale, _boob_yscale, 0, top_skin, 1);"
-    )
-    code = code.replace(
-        "draw_sprite_ext(func_get_portrait(top_sprite, 0), 3, portrait_x, portrait_y + (top_breath * 64), 1 * custom_portrait_scale, 1 * custom_portrait_scale, 0, top_skin, 1);",
-        "draw_sprite_ext(_lover_base_portrait, 3, portrait_x, portrait_y + (top_breath * 64), 1 * custom_portrait_scale, 1 * custom_portrait_scale, 0, top_skin, 1);"
-    )
-    code = code.replace(
-        "draw_sprite_ext(func_get_portrait(top_sprite, 0), (top_sprite == custom_mating_press && top_sprite != legacy_custom_mating_press) ? 12 : 8,",
-        "draw_sprite_ext(_lover_base_portrait, (top_sprite == custom_mating_press && top_sprite != legacy_custom_mating_press) ? 12 : 8,"
-    )
+    code = guarded_replace(code, "draw_sprite_ext(func_get_portrait_boobs(top_sprite, 0), 2, portrait_x, _boob_y, _boob_xscale, _boob_yscale, 0, top_skin, 1);", "var _lb_boob = func_get_portrait_boobs(top_sprite, 0); if (!sprite_exists(_lb_boob) || _lb_boob == -1) _lb_boob = _lover_base_portrait; draw_sprite_ext(_lb_boob, 2, portrait_x, _boob_y, _boob_xscale, _boob_yscale, 0, top_skin, 1);", "patch_draw_code:draw_sprite_ext_func_get_portrait_boobs_", count=-1)
+    code = guarded_replace(code, "draw_sprite_ext(func_get_portrait(top_sprite, 0), 3, portrait_x, portrait_y + (top_breath * 64), 1 * custom_portrait_scale, 1 * custom_portrait_scale, 0, top_skin, 1);", "draw_sprite_ext(_lover_base_portrait, 3, portrait_x, portrait_y + (top_breath * 64), 1 * custom_portrait_scale, 1 * custom_portrait_scale, 0, top_skin, 1);", "patch_draw_code:draw_sprite_ext_func_get_portrait_top_sp", count=-1)
+    code = guarded_replace(code, "draw_sprite_ext(func_get_portrait(top_sprite, 0), (top_sprite == custom_mating_press && top_sprite != legacy_custom_mating_press) ? 12 : 8,", "draw_sprite_ext(_lover_base_portrait, (top_sprite == custom_mating_press && top_sprite != legacy_custom_mating_press) ? 12 : 8,", "patch_draw_code:draw_sprite_ext_func_get_portrait_top_sp_2", count=-1)
 
     # Fix all c_sprite and dt_c_sprite assignments without string collision
-    code = code.replace("dt_c_sprite = legacy_custom_condom;", "if (sprite_exists(legacy_custom_condom) && legacy_custom_condom != -1) dt_c_sprite = legacy_custom_condom;")
-    code = code.replace(" c_sprite = legacy_custom_condom;", " if (sprite_exists(legacy_custom_condom) && legacy_custom_condom != -1) c_sprite = legacy_custom_condom;")
-    code = code.replace("draw_sprite_ext(legacy_xray_sprite", "var _lx = (sprite_exists(legacy_xray_sprite) && legacy_xray_sprite != -1) ? legacy_xray_sprite : sFutaXray; draw_sprite_ext(_lx")
+    code = guarded_replace(code, "dt_c_sprite = legacy_custom_condom;", "if (sprite_exists(legacy_custom_condom) && legacy_custom_condom != -1) dt_c_sprite = legacy_custom_condom;", "patch_draw_code:dt_c_sprite_legacy_custom_condom", count=-1)
+    code = guarded_replace(code, " c_sprite = legacy_custom_condom;", " if (sprite_exists(legacy_custom_condom) && legacy_custom_condom != -1) c_sprite = legacy_custom_condom;", "patch_draw_code:c_sprite_legacy_custom_condom", count=-1)
+    code = guarded_replace(code, "draw_sprite_ext(legacy_xray_sprite", "var _lx = (sprite_exists(legacy_xray_sprite) && legacy_xray_sprite != -1) ? legacy_xray_sprite : sFutaXray; draw_sprite_ext(_lx", "patch_draw_code:draw_sprite_ext_legacy_xray_sprite", count=-1)
 
     # Safety before drawing condoms in mating press (around line 1770)
-    code = code.replace(
-        "draw_sprite_ext(c_sprite, p_condom,",
-        "if (!sprite_exists(c_sprite) || c_sprite == -1) c_sprite = sFutaCondom; draw_sprite_ext(c_sprite, p_condom,"
-    )
-    code = code.replace(
-        "draw_sprite_ext(c_sprite, p_broken,",
-        "if (!sprite_exists(c_sprite) || c_sprite == -1) c_sprite = sFutaCondom; draw_sprite_ext(c_sprite, p_broken,"
-    )
+    code = guarded_replace(code, "draw_sprite_ext(c_sprite, p_condom,", "if (!sprite_exists(c_sprite) || c_sprite == -1) c_sprite = sFutaCondom; draw_sprite_ext(c_sprite, p_condom,", "patch_draw_code:draw_sprite_ext_c_sprite_p_condom", count=-1)
+    code = guarded_replace(code, "draw_sprite_ext(c_sprite, p_broken,", "if (!sprite_exists(c_sprite) || c_sprite == -1) c_sprite = sFutaCondom; draw_sprite_ext(c_sprite, p_broken,", "patch_draw_code:draw_sprite_ext_c_sprite_p_broken", count=-1)
 
     LOGGER.log("Draw_0: Injected sprite existence guards on custom_portrait draws (cures requested -1 crash).", prefix="[+]")
 
     # Unlock ALL 8 gameplay mechanics with open panels
-    code = code.replace(
-        "if (futa_selector_open == true || newlover_menu_toggle == true || newwife_menu_toggle == true || radio_toggle == true || futa_selector_close_timer > 0)\n{\n    penis_grab = false;\n}",
-        "if (futa_selector_open == true || radio_toggle == true || futa_selector_close_timer > 0)\n{\n    penis_grab = false;\n}"
-    )
+    code = guarded_replace(code, "if (futa_selector_open == true || newlover_menu_toggle == true || newwife_menu_toggle == true || radio_toggle == true || futa_selector_close_timer > 0)\n{\n    penis_grab = false;\n}", "if (futa_selector_open == true || radio_toggle == true || futa_selector_close_timer > 0)\n{\n    penis_grab = false;\n}", "patch_draw_code:if_futa_selector_open_true_newlover_menu", count=-1)
 
     old_targets = [
         ("if (radial_menu_open == false && futa_selector_open == false && radial_manual_ui_mode == false && newlover_menu_toggle == false && newwife_menu_toggle == false)",
@@ -735,7 +721,7 @@ else if (variable_instance_exists(id, "mob_expanded") && mob_expanded)
     target_nl_title = 'draw_text_transformed(menu_cx, menu_start_y + menu_pad, "LOVER", 0.65, 0.65, 0);'
     new_nl_title = gml("patch_draw_code/new_nl_title")
     if target_nl_title in code and "_close_nl_hover ? make_color_rgb" not in code:
-        code = code.replace(target_nl_title, new_nl_title, 1)
+        code = guarded_replace(code, target_nl_title, new_nl_title, "patch_draw_code:target_nl_title", count=1)
 
     # Fluid boundary clamping and dragging for New Wife panel
     old_nw_drag = gml("patch_draw_code/old_nw_drag")
@@ -747,7 +733,7 @@ else if (variable_instance_exists(id, "mob_expanded") && mob_expanded)
     target_nw_title = 'draw_text_transformed(menu_cx, menu_start_y + menu_pad, "WIFE", 0.65, 0.65, 0);'
     new_nw_title = gml("patch_draw_code/new_nw_title")
     if target_nw_title in code and "_close_nw_hover ? make_color_rgb" not in code:
-        code = code.replace(target_nw_title, new_nw_title, 1)
+        code = guarded_replace(code, target_nw_title, new_nw_title, "patch_draw_code:target_nw_title", count=1)
 
     old_nl_outside = "if (mouse_check_button_pressed(mb_left) && !menu_bounds && !newlover_dragging && !mm_press5 && !in_action_menu)"
     new_nl_outside = "// Outside-click auto-close removed: menus remain open independently\n        if (false)"
@@ -781,32 +767,14 @@ else if (variable_instance_exists(id, "mob_expanded") && mob_expanded)
     new_act_btn = "if (orgasm == false && title == false)"
     code = guarded_replace(code, old_act_btn, new_act_btn, "patch_draw_code:old_act_btn")
 
-    code = code.replace(
-        "if (mouse_check_button_pressed(mb_right) || keyboard_check_pressed(vk_escape))\n        {\n            newlover_menu_toggle = false;",
-        "if (keyboard_check_pressed(vk_escape))\n        {\n            newlover_menu_toggle = false;"
-    )
-    code = code.replace(
-        "if (mouse_check_button_pressed(mb_right) || keyboard_check_pressed(vk_escape))\n        {\n            newwife_menu_toggle = false;",
-        "if (keyboard_check_pressed(vk_escape))\n        {\n            newwife_menu_toggle = false;"
-    )
+    code = guarded_replace(code, "if (mouse_check_button_pressed(mb_right) || keyboard_check_pressed(vk_escape))\n        {\n            newlover_menu_toggle = false;", "if (keyboard_check_pressed(vk_escape))\n        {\n            newlover_menu_toggle = false;", "patch_draw_code:if_mouse_check_button_pressed_mb_right_k", count=-1)
+    code = guarded_replace(code, "if (mouse_check_button_pressed(mb_right) || keyboard_check_pressed(vk_escape))\n        {\n            newwife_menu_toggle = false;", "if (keyboard_check_pressed(vk_escape))\n        {\n            newwife_menu_toggle = false;", "patch_draw_code:if_mouse_check_button_pressed_mb_right_k_2", count=-1)
 
-    code = code.replace(
-        "newlover_menu_toggle = true;\n            newwife_menu_toggle = false;\n            radial_panel_from_radial = true;",
-        "newlover_menu_toggle = true;\n            radial_panel_from_radial = true;"
-    )
-    code = code.replace(
-        "newwife_menu_toggle = true;\n            newlover_menu_toggle = false;\n            radial_panel_from_radial = true;",
-        "newwife_menu_toggle = true;\n            radial_panel_from_radial = true;"
-    )
-    code = code.replace(
-        "else if (newlover_menu_toggle == true || newwife_menu_toggle == true)\n    {\n        newlover_menu_toggle = false;\n        newwife_menu_toggle = false;\n    }",
-        "// keep simultaneous menus open"
-    )
+    code = guarded_replace(code, "newlover_menu_toggle = true;\n            newwife_menu_toggle = false;\n            radial_panel_from_radial = true;", "newlover_menu_toggle = true;\n            radial_panel_from_radial = true;", "patch_draw_code:newlover_menu_toggle_true_newwife_menu_t", count=-1)
+    code = guarded_replace(code, "newwife_menu_toggle = true;\n            newlover_menu_toggle = false;\n            radial_panel_from_radial = true;", "newwife_menu_toggle = true;\n            radial_panel_from_radial = true;", "patch_draw_code:newwife_menu_toggle_true_newlover_menu_t", count=-1)
+    code = guarded_replace(code, "else if (newlover_menu_toggle == true || newwife_menu_toggle == true)\n    {\n        newlover_menu_toggle = false;\n        newwife_menu_toggle = false;\n    }", "// keep simultaneous menus open", "patch_draw_code:else_if_newlover_menu_toggle_true_newwif", count=-1)
 
-    code = code.replace(
-        "if (top_sprite == custom_mating_press)\n    {\n        penis_sprite = custom_mating_press;\n    }",
-        "if (custom_lover_toggle == true || top_sprite == custom_mating_press || top_sprite == legacy_custom_mating_press)\n    {\n        penis_sprite = top_sprite;\n    }"
-    )
+    code = guarded_replace(code, "if (top_sprite == custom_mating_press)\n    {\n        penis_sprite = custom_mating_press;\n    }", "if (custom_lover_toggle == true || top_sprite == custom_mating_press || top_sprite == legacy_custom_mating_press)\n    {\n        penis_sprite = top_sprite;\n    }", "patch_draw_code:if_top_sprite_custom_mating_press_penis_", count=-1)
 
     old_menu_trans = gml("patch_draw_code/old_menu_trans")
 
@@ -857,15 +825,15 @@ def inject_virtual_keyboard_and_search(code):
     new_max_scroll_def = gml("inject_virtual_keyboard_and_search/new_max_scroll_def")
 
     if old_max_scroll_def in code and "_sel_jump_done" not in code:
-        code = code.replace(old_max_scroll_def, new_max_scroll_def, 1)
+        code = guarded_replace(code, old_max_scroll_def, new_max_scroll_def, "inject_virtual_keyboard_and_search:old_max_scroll_def", count=1)
 
-    code = code.replace("futa_selector_open = false;", "futa_selector_open = false; _sel_jump_done = false; selector_favs_only = false;")
+    code = guarded_replace(code, "futa_selector_open = false;", "futa_selector_open = false; _sel_jump_done = false; selector_favs_only = false;", "inject_virtual_keyboard_and_search:futa_selector_open_false", count=-1)
 
     target_border_draw = "draw_set_color(_border_col);\n            draw_rectangle(_cx - 2, _cy - 2, _cx + _cell_w + 2, _cy + _cell_h + 2, true);"
     new_border_draw = gml("inject_virtual_keyboard_and_search/new_border_draw")
 
     if target_border_draw in code and "_is_equipped" not in code:
-        code = code.replace(target_border_draw, new_border_draw, 1)
+        code = guarded_replace(code, target_border_draw, new_border_draw, "inject_virtual_keyboard_and_search:target_border_draw", count=1)
 
     return code
 
@@ -901,10 +869,14 @@ def inject_lazy_thumbnails_into_draw(code):
     old_futa_click = gml("inject_lazy_thumbnails_into_draw/old_futa_click")
     new_futa_click = gml("inject_lazy_thumbnails_into_draw/new_futa_click")
     if old_futa_click in code: code = code.replace(old_futa_click, new_futa_click, 1)
+    else:
+        PATCH_MISSES.append("inject_lazy_thumbnails_into_draw:old_futa_click")
 
     old_wife_click = gml("inject_lazy_thumbnails_into_draw/old_wife_click")
     new_wife_click = gml("inject_lazy_thumbnails_into_draw/new_wife_click")
     if old_wife_click in code: code = code.replace(old_wife_click, new_wife_click, 1)
+    else:
+        PATCH_MISSES.append("inject_lazy_thumbnails_into_draw:old_wife_click")
 
     old_w_scale_def = gml("inject_lazy_thumbnails_into_draw/old_w_scale_def")
     new_w_scale_def = gml("inject_lazy_thumbnails_into_draw/new_w_scale_def")
@@ -915,14 +887,20 @@ def inject_lazy_thumbnails_into_draw(code):
 
     new_sd = gml("inject_lazy_thumbnails_into_draw/new_sd")
     if old_sd in code: code = code.replace(old_sd, new_sd, 1)
+    else:
+        PATCH_MISSES.append("inject_lazy_thumbnails_into_draw:old_sd")
 
     old_ci_top = gml("inject_lazy_thumbnails_into_draw/old_ci_top")
     new_ci_top = gml("inject_lazy_thumbnails_into_draw/new_ci_top")
     if old_ci_top in code: code = code.replace(old_ci_top, new_ci_top, 1)
+    else:
+        PATCH_MISSES.append("inject_lazy_thumbnails_into_draw:old_ci_top")
 
     old_draw_cell_end = """            comment = "hover detection — highlight and record name";"""
     new_draw_cell_end = gml("inject_lazy_thumbnails_into_draw/new_draw_cell_end")
     if old_draw_cell_end in code: code = code.replace(old_draw_cell_end, new_draw_cell_end, 1)
+    else:
+        PATCH_MISSES.append("inject_lazy_thumbnails_into_draw:old_draw_cell_end")
 
     old_cc = 'if (mouse_check_button_pressed(mb_left) && !title && futa_selector_open_timer <= 0)'
     new_cc = 'if ((mouse_check_button_pressed(mb_left) || device_mouse_check_button_pressed(0, mb_left)) && !title && futa_selector_open_timer <= 0 && !_star_hover)'
@@ -933,15 +911,15 @@ def inject_lazy_thumbnails_into_draw(code):
     code = guarded_replace(code, old_fab_txt, new_fab_txt, "inject_lazy_thumbnails_into_draw:old_fab_txt")
 
     # Priority: Suppress background lover and wife buttons while character selector is open
-    code = code.replace('comment = "futa ratings window";\nvar button_newlover_press = false;\nif (title == false && start_timer < 1)', 'comment = "futa ratings window";\nvar button_newlover_press = false;\nif (title == false && start_timer < 1 && futa_selector_open == false && orgasm == false)', 1)
-    code = code.replace('comment = "switch partner button";\nmm_press4 = false;\nif (title == false && start_timer < 1)', 'comment = "switch partner button";\nmm_press4 = false;\nif (title == false && start_timer < 1 && futa_selector_open == false && orgasm == false)', 1)
-    code = code.replace('if ((button_newlover_press == true || newlover_menu_toggle == true) && options_toggle == false && orgasm == false)', 'if (newlover_menu_toggle == true && newwife_menu_toggle == false && options_toggle == false && orgasm == false && futa_selector_open == false)', 1)
-    code = code.replace('if (mm_press4 == true || newwife_menu_toggle == true)', 'if (newwife_menu_toggle == true && newlover_menu_toggle == false && options_toggle == false && futa_selector_open == false)', 1)
+    code = guarded_replace(code, 'comment = "futa ratings window";\nvar button_newlover_press = false;\nif (title == false && start_timer < 1)', 'comment = "futa ratings window";\nvar button_newlover_press = false;\nif (title == false && start_timer < 1 && futa_selector_open == false && orgasm == false)', "inject_lazy_thumbnails_into_draw:comment_futa_ratings_window_var_button_n", count=1)
+    code = guarded_replace(code, 'comment = "switch partner button";\nmm_press4 = false;\nif (title == false && start_timer < 1)', 'comment = "switch partner button";\nmm_press4 = false;\nif (title == false && start_timer < 1 && futa_selector_open == false && orgasm == false)', "inject_lazy_thumbnails_into_draw:comment_switch_partner_button_mm_press4_", count=1)
+    code = guarded_replace(code, 'if ((button_newlover_press == true || newlover_menu_toggle == true) && options_toggle == false && orgasm == false)', 'if (newlover_menu_toggle == true && newwife_menu_toggle == false && options_toggle == false && orgasm == false && futa_selector_open == false)', "inject_lazy_thumbnails_into_draw:if_button_newlover_press_true_newlover_m", count=1)
+    code = guarded_replace(code, 'if (mm_press4 == true || newwife_menu_toggle == true)', 'if (newwife_menu_toggle == true && newlover_menu_toggle == false && options_toggle == false && futa_selector_open == false)', "inject_lazy_thumbnails_into_draw:if_mm_press4_true_newwife_menu_toggle_tr", count=1)
 
 
     # Keep overlay menu button behind CSS screens
-    code = code.replace('var _fab_x_offset = round(room_width * 0.12);', 'if (futa_selector_open == false)\n{\nvar _fab_x_offset = round(room_width * 0.12);', 1)
-    code = code.replace('''draw_set_font(_mob_prev_fnt);
+    code = guarded_replace(code, 'var _fab_x_offset = round(room_width * 0.12);', 'if (futa_selector_open == false)\n{\nvar _fab_x_offset = round(room_width * 0.12);', "inject_lazy_thumbnails_into_draw:var_fab_x_offset_round_room_width_0_12", count=1)
+    code = guarded_replace(code, '''draw_set_font(_mob_prev_fnt);
 draw_set_halign(_mob_prev_halign);
 draw_set_valign(_mob_prev_valign);
 draw_set_color(_mob_prev_col);
@@ -950,43 +928,40 @@ draw_set_halign(_mob_prev_halign);
 draw_set_valign(_mob_prev_valign);
 draw_set_color(_mob_prev_col);
 draw_set_alpha(_mob_prev_alp);
-}''', 1)
+}''', "inject_lazy_thumbnails_into_draw:draw_set_font_mob_prev_fnt_draw_set_hali", count=1)
     # Subtle, unobtrusive opacity across mobile overlay
-    code = code.replace('var _fab_alpha = (mob_expanded || _fab_over) ? 0.65 : 0.22;', 'var _fab_alpha = (mob_expanded || _fab_over) ? 0.40 : 0.12;', 1)
-    code = code.replace('draw_set_alpha((_qb_over && _mob_touch_d) ? 0.85 : 0.65);', 'draw_set_alpha((_qb_over && _mob_touch_d) ? 0.45 : 0.25);', 1)
-    code = code.replace('''draw_set_alpha(0.85);
+    code = guarded_replace(code, 'var _fab_alpha = (mob_expanded || _fab_over) ? 0.65 : 0.22;', 'var _fab_alpha = (mob_expanded || _fab_over) ? 0.40 : 0.12;', "inject_lazy_thumbnails_into_draw:var_fab_alpha_mob_expanded_fab_over_0_65", count=1)
+    code = guarded_replace(code, 'draw_set_alpha((_qb_over && _mob_touch_d) ? 0.85 : 0.65);', 'draw_set_alpha((_qb_over && _mob_touch_d) ? 0.45 : 0.25);', "inject_lazy_thumbnails_into_draw:draw_set_alpha_qb_over_mob_touch_d_0_85_", count=1)
+    code = guarded_replace(code, '''draw_set_alpha(0.85);
         draw_set_color(_qb_col);''', '''draw_set_alpha(0.40);
-        draw_set_color(_qb_col);''', 1)
-    code = code.replace('''draw_set_color(c_white);
+        draw_set_color(_qb_col);''', "inject_lazy_thumbnails_into_draw:draw_set_alpha_0_85_draw_set_color_qb_co", count=1)
+    code = guarded_replace(code, '''draw_set_color(c_white);
         draw_text((_qbx1 + _qbx2) * 0.5, (_qby1 + _qby2) * 0.5, _qb_lbl);''', '''draw_set_alpha(0.65);
         draw_set_color(c_white);
-        draw_text((_qbx1 + _qbx2) * 0.5, (_qby1 + _qby2) * 0.5, _qb_lbl);''', 1)
-    code = code.replace('''draw_set_alpha(0.58);
+        draw_text((_qbx1 + _qbx2) * 0.5, (_qby1 + _qby2) * 0.5, _qb_lbl);''', "inject_lazy_thumbnails_into_draw:draw_set_color_c_white_draw_text_qbx1_qb", count=1)
+    code = guarded_replace(code, '''draw_set_alpha(0.58);
     draw_set_color(_c_mob_bg);''', '''draw_set_alpha(0.35);
-    draw_set_color(_c_mob_bg);''', 1)
-    code = code.replace('''draw_set_alpha(0.45);
+    draw_set_color(_c_mob_bg);''', "inject_lazy_thumbnails_into_draw:draw_set_alpha_0_58_draw_set_color_c_mob", count=1)
+    code = guarded_replace(code, '''draw_set_alpha(0.45);
     draw_set_color(_c_mob_border);''', '''draw_set_alpha(0.25);
-    draw_set_color(_c_mob_border);''', 1)
-    code = code.replace('''draw_set_alpha(0.85);
+    draw_set_color(_c_mob_border);''', "inject_lazy_thumbnails_into_draw:draw_set_alpha_0_45_draw_set_color_c_mob", count=1)
+    code = guarded_replace(code, '''draw_set_alpha(0.85);
     draw_set_color(c_white);
     draw_text((_mx1 + _mx2) * 0.5, _my1 + 12, "CONTROLS");''', '''draw_set_alpha(0.55);
     draw_set_color(c_white);
-    draw_text((_mx1 + _mx2) * 0.5, _my1 + 12, "CONTROLS");''', 1)
-    code = code.replace('draw_set_alpha((_btog_val || (_btn_over && _mob_touch_d && !mob_is_dragging)) ? 0.7 : 0.42);', 'draw_set_alpha((_btog_val || (_btn_over && _mob_touch_d && !mob_is_dragging)) ? 0.45 : 0.20);', 1)
-    code = code.replace('draw_set_alpha(_btog_val ? 0.8 : 0.35);', 'draw_set_alpha(_btog_val ? 0.50 : 0.20);', 1)
-    code = code.replace('''draw_set_alpha(0.85);
+    draw_text((_mx1 + _mx2) * 0.5, _my1 + 12, "CONTROLS");''', "inject_lazy_thumbnails_into_draw:draw_set_alpha_0_85_draw_set_color_c_whi", count=1)
+    code = guarded_replace(code, 'draw_set_alpha((_btog_val || (_btn_over && _mob_touch_d && !mob_is_dragging)) ? 0.7 : 0.42);', 'draw_set_alpha((_btog_val || (_btn_over && _mob_touch_d && !mob_is_dragging)) ? 0.45 : 0.20);', "inject_lazy_thumbnails_into_draw:draw_set_alpha_btog_val_btn_over_mob_tou", count=1)
+    code = guarded_replace(code, 'draw_set_alpha(_btog_val ? 0.8 : 0.35);', 'draw_set_alpha(_btog_val ? 0.50 : 0.20);', "inject_lazy_thumbnails_into_draw:draw_set_alpha_btog_val_0_8_0_35", count=1)
+    code = guarded_replace(code, '''draw_set_alpha(0.85);
         draw_set_color(_btog_val ? _b_accent : c_white);''', '''draw_set_alpha(0.60);
-        draw_set_color(_btog_val ? _b_accent : c_white);''', 1)
+        draw_set_color(_btog_val ? _b_accent : c_white);''', "inject_lazy_thumbnails_into_draw:draw_set_alpha_0_85_draw_set_color_btog_", count=1)
 
     # Force close Lover/Wife panels and stat graphs during climax
     old_ostart = gml("inject_lazy_thumbnails_into_draw/old_ostart")
     new_ostart = gml("inject_lazy_thumbnails_into_draw/new_ostart")
     code = guarded_replace(code, old_ostart, new_ostart, "inject_lazy_thumbnails_into_draw:old_ostart")
 
-    code = code.replace(
-        'comment = "orgasm start for all cases";',
-        'if (orgasm == true) { newlover_menu_toggle = false; newwife_menu_toggle = false; }\ncomment = "orgasm start for all cases";'
-    )
+    code = guarded_replace(code, 'comment = "orgasm start for all cases";', 'if (orgasm == true) { newlover_menu_toggle = false; newwife_menu_toggle = false; }\ncomment = "orgasm start for all cases";', "inject_lazy_thumbnails_into_draw:comment_orgasm_start_for_all_cases", count=-1)
 
 
 
@@ -1066,21 +1041,14 @@ def inject_complete_overlay(code):
 
     # Do not inject duplicate quick access bar (already present in base engine)
     # Just update the single existing quick bar's [N] button to force-close panels
-    code = code.replace(
-        'else if (_qb_key == 78)\n            {\n                orgasm_start = true;\n                orgasm = true;\n                keyboard_key_press(ord("N"));\n                mob_release_key = 78;\n            }',
-        'else if (_qb_key == 78)\n            {\n                newlover_menu_toggle = false;\n                newwife_menu_toggle = false;\n                orgasm_start = true;\n                orgasm = true;\n                keyboard_key_press(ord("N"));\n                mob_release_key = 78;\n            }',
-        1
-    )
+    code = guarded_replace(code, 'else if (_qb_key == 78)\n            {\n                orgasm_start = true;\n                orgasm = true;\n                keyboard_key_press(ord("N"));\n                mob_release_key = 78;\n            }', 'else if (_qb_key == 78)\n            {\n                newlover_menu_toggle = false;\n                newwife_menu_toggle = false;\n                orgasm_start = true;\n                orgasm = true;\n                keyboard_key_press(ord("N"));\n                mob_release_key = 78;\n            }', "inject_complete_overlay:else_if_qb_key_78_orgasm_start_true_orga", count=1)
 
     old_btns_def = '    var _btns = [["[N] CLIMAX", 78, 0, 0, _c_mob_accent], ["[M] MAN:" + _man_status, 77, 1, manual_mode > 0, make_color_rgb(0, 210, 110)], ["[RADIAL MENU]", "RADIAL", 1, radial_menu_open, make_color_rgb(0, 180, 230)], ["[T] " + _peek_status, 84, 0, 0, 16777215], ["[C] WIFE CLIM", 67, 0, 0, 16777215], ["[O] OVULATE", 79, 0, 0, 16777215], ["[G] GHOST", 71, 1, futa_ghost_toggle, _c_mob_accent], ["[Q] REROLL", 81, 0, 0, 16777215], ["[H] HITBOX", 72, 1, mob_hitbox_active, make_color_rgb(160, 0, 220)], ["[R] RESET", 82, 0, 0, 16777215], ["[ESC] BACK", 27, 0, 0, make_color_rgb(220, 60, 60)], ["[ENTER] SET", 13, 0, 0, make_color_rgb(60, 180, 80)]];'
     new_btns_def = gml("inject_complete_overlay/new_btns_def")
 
     code = guarded_replace(code, old_btns_def, new_btns_def, "inject_complete_overlay:old_btns_def")
 
-    code = code.replace(
-        "if (mob_lp_timer == 22 && !radial_menu_open && title == false && orgasm == false)",
-        "if (mob_lp_timer == 22 && !radial_menu_open && title == false && orgasm == false && variable_instance_exists(id, \"manual_mode\") && manual_mode > 0)"
-    )
+    code = guarded_replace(code, "if (mob_lp_timer == 22 && !radial_menu_open && title == false && orgasm == false)", "if (mob_lp_timer == 22 && !radial_menu_open && title == false && orgasm == false && variable_instance_exists(id, \"manual_mode\") && manual_mode > 0)", "inject_complete_overlay:if_mob_lp_timer_22_radial_menu_open_titl", count=-1)
 
     old_btn_exec = gml("inject_complete_overlay/old_btn_exec")
 

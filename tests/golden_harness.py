@@ -83,7 +83,7 @@ def run_build(m, io, sc):
         return {"skipped": f"missing input: {apk if not apk.exists() else folder}"}
     rec = Recorder()
     real_run, real_sleep = subprocess.run, time.sleep
-    real_sign = set_everywhere(m, "sign_apk_file", lambda p: None)
+    real_sign = set_everywhere(m, "sign_apk_file", lambda p, **kw: None)
     subprocess.run, time.sleep = rec, (lambda s: None)
     try:
         with tempfile.TemporaryDirectory() as td:

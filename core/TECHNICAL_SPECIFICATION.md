@@ -2347,7 +2347,7 @@ Source: wbp/gml_patches.py, patch_draw_code; bundle_src/gml_Object_oFutaMatingPr
 ### 66. [DR-55] [Maintenance] Adding or Changing a Patch
 
 1. **Path Selection**: Features must be added to the bundle for Deeproom 4.0.3 and to the patcher's `patch_*` functions for ModRoom and v1.5.
-2. **Patcher Implementation**: Add `old_...` / `new_...` string pairs. Anchors must be verbatim from decompiled code. Guard with `if old in code:` to ensure stability across game updates.
+2. **Patcher Implementation**: Add `old_...` / `new_...` string pairs. Anchors must be verbatim from decompiled code. Apply them with `guarded_replace(code, old, new, "function:anchor", count=...)` (`wbp/common.py`; `count=-1` replaces every hit like `str.replace`), or an `if old in code:` whose `else` appends the label to `PATCH_MISSES`. A missing anchor then leaves the code unchanged and is listed in `output/<apk>_patch_report.txt`, so a patch that stops matching after a game update shows up at build time. `tests/test_patch_guards.py` fails on any bare `code = code.replace(...)` in `wbp/gml_patches.py`.
 3. **Bundle Implementation**: Decode the bundle, edit the GML script, and re-compress with `zlib`.
 4. **Variable Shield**: New variables read in Draw/Step must be initialized in Create or covered by the DR-44 dynamic shield.
 5. **Documentation**: Update the technical specification, including Target Anchor and IDs.
