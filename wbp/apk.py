@@ -22,6 +22,7 @@ from wbp.common import LOGGER, PATCH_MISSES, ROOT_DIR, print_progress, unlink_wi
 from wbp.axml import AxmlEditor
 from wbp.detect import detect_mod_engine_version
 from wbp.env import find_uber_apk_signer, get_jdk_tool
+from wbp.signing import signing_key
 from wbp.descriptors import convert_descriptors, XRAY_ORIGIN_REPORT
 from wbp.packs import BRIDGE_CONVERTED, BRIDGE_SKIPPED, BRIDGED_WIFE_PACKS, MODERN_PACKS_IN_V15, gather_custom_assets, generate_manifest_data, move_skipped_packs, plan_pack_skips, write_skip_report
 from wbp.engines import generate_dynamic_variable_shield, patch_mr33_engine_bytecode, patch_v15_engine_bytecode
@@ -31,18 +32,16 @@ from wbp.toy import apply_toybridge_suite_patches
 # -----------------------------------------------------------------------------
 # APK CRYPTOGRAPHIC SIGNING
 # -----------------------------------------------------------------------------
-def sign_apk_file(apk_path):
+def sign_apk_file(apk_path, legacy_key=False):
+    """Align and sign with this computer's personal key (wbp.signing), or the shared legacy key with --legacy-key."""
     apk_path = Path(apk_path).resolve()
-    patcher_dir = ROOT_DIR
-    core_dir = patcher_dir / "core"
-    keystore = core_dir / "apkpatcher.keystore" if (core_dir / "apkpatcher.keystore").exists() else patcher_dir / "apkpatcher.keystore"
-    pass_file = core_dir / "apkpatcher.keystore.pass" if (core_dir / "apkpatcher.keystore.pass").exists() else patcher_dir / "apkpatcher.keystore.pass"
-
-    if not keystore.exists() or not pass_file.exists():
-        LOGGER.error(f"Signing keystore not found at {keystore}.")
-        return
-
-    keystore_pass = pass_file.read_text(encoding="utf-8").strip()
+    try:
+        keystore, ks_alias, keystore_pass = signing_key(legacy_key)
+    except RuntimeError as exc:
+        if apk_path.exists():
+            apk_path.unlink()
+        LOGGER.error(str(exc))
+        raise
     java = get_jdk_tool("java")
     uber_jar = find_uber_apk_signer()
 
@@ -57,7 +56,7 @@ def sign_apk_file(apk_path):
         java, "-jar", uber_jar,
         "-a", str(apk_path),
         "--ks", str(keystore),
-        "--ksAlias", "apkpatcherkey",
+        "--ksAlias", ks_alias,
         "--ksPass", keystore_pass,
         "--ksKeyPass", keystore_pass,
         "--allowResign", "--overwrite"
@@ -553,7 +552,7 @@ def patch_game_apk(utmt_cli, source_apk, target_apk, source_folder=None, enable_
         # 7. Sign APK (allow 2s buffer for Windows NTFS disk flush on large archives)
         import time
         time.sleep(2.0)
-        sign_apk_file(target_apk)
+        sign_apk_file(target_apk, legacy_key=bool(opts.get("legacy_key")))
 
     # 8. High-Signal Post-Build Summary Card
     target_apk_size_mb = (target_apk.stat().st_size / (1024 * 1024)) if target_apk.exists() else 0

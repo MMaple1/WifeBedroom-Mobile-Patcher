@@ -180,7 +180,8 @@ def prompt_install_options(args):
             "quarantine_duplicates": getattr(args, "quarantine_duplicates", True),
             "xray_origins": getattr(args, "xray_origins", True),
             "move_skipped": getattr(args, "move_skipped", False),
-            "approximate": getattr(args, "approximate", False)
+            "approximate": getattr(args, "approximate", False),
+            "legacy_key": getattr(args, "legacy_key", False)
         }
 
     def ask(prompt_text, default_yes=True):
@@ -254,7 +255,8 @@ def prompt_install_options(args):
             "quarantine_duplicates": quarantine_ans,
             "xray_origins": xray_ans,
             "move_skipped": getattr(args, "move_skipped", False),
-            "approximate": getattr(args, "approximate", False)
+            "approximate": getattr(args, "approximate", False),
+            "legacy_key": getattr(args, "legacy_key", False)
         }
     else:
         print("\n" + "-" * 70)
@@ -267,6 +269,7 @@ def prompt_install_options(args):
         opts["xray_origins"] = getattr(args, "xray_origins", True) and ask("\n1b. Align X-ray overlays with each character's sprite (Deeproom; measured per pack, your mod folder is not changed)?", default_yes=True)
         opts["move_skipped"] = getattr(args, "move_skipped", False)
         opts["approximate"] = getattr(args, "approximate", False)
+        opts["legacy_key"] = getattr(args, "legacy_key", False)
         opts["core_manifest"] = ask("\n2. Core Mobile Engine & Fast Manifest Optimization?", default_yes=True)
         opts["scaling"] = ask("\n3. Universal Origin-Based Model Scaling (160px normalization)?", default_yes=True)
         opts["stability"] = ask("\n4. Engine Stability & Portrait Parity (cures requested -1 crashes)?", default_yes=True)
@@ -302,6 +305,7 @@ def prompt_install_options(args):
     print("\n" + "-" * 70)
     print("Installation configuration confirmed:")
     print(f"  - Duplicate Asset Detection/Removal   : {'ENABLED' if opts.get('quarantine_duplicates') else 'DISABLED'}")
+    print(f"  - APK Signing Key                     : {'SHARED LEGACY KEY (--legacy-key)' if opts.get('legacy_key') else 'YOUR PERSONAL KEY'}")
     print(f"  - X-ray Overlay Alignment (Deeproom)  : {'ENABLED' if opts.get('xray_origins', True) else 'DISABLED'}")
     print(f"  - Core Mobile Engine & Fast Manifests : {'ENABLED' if opts.get('core_manifest') else 'DISABLED'}")
     print(f"  - Universal Model Scaling (160px)     : {'ENABLED' if opts.get('scaling') else 'DISABLED'}")
@@ -334,6 +338,7 @@ def main():
     parser.add_argument("--validate-only", action="store_true", help="Dry-run audit: validate and test portability of mod folders without building APK")
     parser.add_argument("--quarantine-duplicates", action="store_true", default=True, help="Automatically detect and quarantine duplicate custom character/room folders (default: True)")
     parser.add_argument("--approximate", action="store_true", default=False, help="When bridging ModRoom (_0.png) and standard sprite names, also convert strips whose frame count must be reduced (drops frames; mappings learned from few packs). Default: only lossless padding and the safe partner X-ray crop; other strips are renamed unchanged")
+    parser.add_argument("--legacy-key", action="store_true", default=False, help="Sign with the shared key that builds before 2026-11-18 used (public; only to keep updating an install made with an older build). Default: your personal key, made once in %%USERPROFILE%%\.wb_mobile_patcher")
     parser.add_argument("--move-skipped", action="store_true", default=False, help="Move skipped duplicate/incompatible packs into output/quarantine/<date-time>/ instead of only skipping them (never overwrites or deletes)")
     parser.add_argument("--no-quarantine-duplicates", action="store_false", dest="quarantine_duplicates", help="Disable duplicate custom folder quarantine")
     parser.add_argument("--no-xray-origins", action="store_false", dest="xray_origins", default=True,

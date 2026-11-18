@@ -2293,17 +2293,18 @@ Source: wbp/packs.py, sanitize_apk_part; wbp/apk.py, patch_game_apk
       java, "-jar", uber_jar,
       "-a", str(apk_path),
       "--ks", str(keystore),
-      "--ksAlias", "apkpatcherkey",
+      "--ksAlias", ks_alias,
       "--ksPass", keystore_pass,
       "--ksKeyPass", keystore_pass,
       "--allowResign", "--overwrite"
   ]
   ```
-- The signer aligns the ZIP entries and signs the APK. It requires `core/apkpatcher.keystore` and its password from `core/apkpatcher.keystore.pass`.
-- If the keystore or password file is missing, the APK remains unsigned and will be rejected by Android devices.
-- The shared keystore in the repository ensures that builds from different users can update each other.
+- The signer aligns the ZIP entries and signs the APK with the key from `wbp/signing.py`, `signing_key()`:
+  - **Default: a personal key.** Made once with `keytool` (RSA 2048, PKCS12, alias `wbpatcher`, random password) in `~/.wb_mobile_patcher/` (`%USERPROFILE%\.wb_mobile_patcher` on Windows; not `%APPDATA%`, because the Microsoft Store Python redirects its own writes there to a folder Java cannot see). Android installs an update only over an APK signed with the same key, so nobody else can push an "update" over your build.
+  - **`--legacy-key`:** the shared key in `core/apkpatcher.keystore` (alias `apkpatcherkey`, password in `core/apkpatcher.keystore.pass`) that builds before 2026-11-18 used. It is public, so it is only for updating an install made with an older build. It stays in the repository for that reason.
+- If the key cannot be made or found, the build stops and the unsigned APK is deleted.
 
-Source: wbp/apk.py, sign_apk_file
+Source: wbp/apk.py, sign_apk_file; wbp/signing.py, signing_key
 
 ---
 

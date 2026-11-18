@@ -69,7 +69,7 @@ Disabled by default; the tool prompts before applying telemetry patches. Game-co
 
 ```text
 usage: WB_Mobile_Patcher.py [-h] [-b BASE_APK] [-o OUTPUT] [-y] [--clean] [--fast]
-                            [--validate-only] [--quarantine-duplicates] [--approximate] [--move-skipped]
+                            [--validate-only] [--quarantine-duplicates] [--approximate] [--legacy-key] [--move-skipped]
                             [--no-quarantine-duplicates] [--no-xray-origins]
                             [--toy-integration {y,n}] [--toy-mode {direct,bridge,all,none}]
                             [--toy-profile {default,easy,mid,hard,mideasy,midhard}]
@@ -95,6 +95,7 @@ usage: WB_Mobile_Patcher.py [-h] [-b BASE_APK] [-o OUTPUT] [-y] [--clean] [--fas
 | `--no-xray-origins` | Deeproom: disable automated X-ray overlay alignment. |
 | `--approximate` | Allow frame-dropping conversions when bridging ModRoom (`_0.png`) and standard formats. Lossless padding is used by default. |
 | `--move-skipped` | Move skipped packs into `output/quarantine/<date-time>/`. Never overwrites or deletes. |
+| `--legacy-key` | Sign with the shared key builds before 2026-11-18 used (public), only to keep updating an install made with an older build. Default: your personal key in `%USERPROFILE%\.wb_mobile_patcher`. |
 | `--toy-integration {y,n}` | Toggle hardware telemetry support (y/n). |
 | `--toy-mode {direct,bridge,all,none}` | Telemetry transport: `direct` (in-game WebSocket), `bridge` (UDP 45735), `all`, or `none`. |
 | `--toy-profile {default,easy,mid,hard,mideasy,midhard}` | Default vibration/stroke intensity profile (default: `default`). |
@@ -161,7 +162,7 @@ usage: WB_Mobile_Patcher.py [-h] [-b BASE_APK] [-o OUTPUT] [-y] [--clean] [--fas
 | UndertaleModCli (UndertaleModTool) | `core/UndertaleModCli/` | GNU GPL v3 (`core/UndertaleModCli/LICENSE.txt`); source: <https://github.com/UnderminersTeam/UndertaleModTool> |
 | uber-apk-signer | `core/uber-apk-signer.jar` | Apache License 2.0; source: <https://github.com/patrickfav/uber-apk-signer> |
 
-**Signing Key:** `core/apkpatcher.keystore` and its credential file are distributed with the repository to ensure cross-compatible app updates. Consequently, any APK signed with this repository can install as an in-place upgrade.
+**Signing Key:** builds are signed with your personal key, made on the first build in `%USERPROFILE%\.wb_mobile_patcher` (back that folder up: a new key cannot update an app installed with the old one). The shared key in `core/` (public, used by builds before 2026-11-18) is used only with `--legacy-key`, to keep updating an install made with an older build.
 
 ---
 

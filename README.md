@@ -59,6 +59,8 @@ py -3 WB_Mobile_Patcher.py --validate-only "My Mod Folder"
 ```
 See DETAILS.md for all options.
 
+**Signing:** your first build makes a personal signing key in `%USERPROFILE%\.wb_mobile_patcher`; back that folder up, because only the same key can update an app you installed. An app built before 2026-11-18 used a shared key: uninstall it before installing a new build (back up your saves first), or keep updating it with `--legacy-key`.
+
 **Deeproom partners' deepthroat too high?** Packs converted for Deeproom before 2026-11-17 carry a `[deepthroat]` block that draws it 66-70 px high, on PC and in the APK. Before building, run the WB_Converters tool: `py -3 WB_1.5_to_Modded.py --repair-deepthroat "<Deeproom>/custom_stuff/custom_wives"` lists them and asks before fixing (`-y` applies, `--dry-run` only lists; originals are backed up to a zip next to the folder).
 
 For technical architecture and in-depth modding details, see DETAILS.md and core/TECHNICAL_SPECIFICATION.md.
