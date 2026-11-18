@@ -33,8 +33,8 @@ def significant(line):
 def corpus_files():
     files = list((ROOT / "core" / "bundle_src").glob("*.gml")) + list((ROOT / "core" / "gml_patches").rglob("*.gml"))
     files += list((ROOT / "wbp").glob("*.py")) + [ROOT / "WB_Mobile_Patcher.py"]
-    for sib in ("Modded_to_WB_1.5_Converter_v1.1", "WB_1.5_to_Modded_Converter_v1.1"):
-        d = ROOT.parent / sib
+    for sib in ("Modded_to_WB_1.5", "WB_1.5_to_Modded"):
+        d = ROOT.parent / "WB_Converters" / sib
         if d.is_dir():
             files += list(d.glob("*.py")) + list((d / "core").glob("*.py"))
     return [f for f in files if f.is_file()]

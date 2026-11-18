@@ -143,7 +143,7 @@ usage: WB_Mobile_Patcher.py [-h] [-b BASE_APK] [-o OUTPUT] [-y] [--clean] [--fas
 | `wbp/cli.py` | Interactive terminal UI, command-line parsing, prompt management, and main loop. (prompts and `main()`) |
 
 ### Source Synchronization & Bundle Maintenance
-- **`wbconv.py` Rules:** `wbp/wbconv.py` is one of four synchronized copies (both converters, this patcher, and Custom Studio backend). Run `python tools/sync_wbconv.py` to synchronize, or add `--check` to verify consistency.
+- **`wbconv.py` Rules:** `wbp/wbconv.py` is one of four synchronized copies (both converters in the `WB_Converters` repo, this patcher, and Custom Studio backend); the canonical one is `WB_Converters/Modded_to_WB_1.5/core/wbconv.py`. Run `python tools/sync_wbconv.py` to synchronize, or add `--check` to verify consistency.
 - **Deeproom Engine Bundle:** Deeproom GML code packaged in `core/mobile_engine.bundle` is maintained in `core/bundle_src/`. Rebuild using `python tools/bundle_tool.py pack` and validate using `python tools/bundle_tool.py check`.
 - **Deepthroat repair:** `python tools/repair_deepthroat.py <custom_wives> [--apply]` undoes the `[deepthroat]` block that converters before 2026-11-17 added to Deeproom partners (`wbconv.repair_deepthroat_folder`; only blocks in the old converter's exact shape, dry run by default, originals zipped next to the folder).
 - **GML Fallback Snippets:** Dynamic replacement scripts are stored as individual files under `core/gml_patches/<function>/<name>.gml` and read byte-for-byte. Line endings are enforced by `.gitattributes` as non-text binary data.

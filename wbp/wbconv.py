@@ -1,7 +1,7 @@
 """wbconv - shared conversion core for the Wife's Bedroom mod converters (standard library only).
 
 Used by Modded_to_WB_1.5.py and WB_1.5_to_Modded.py and the WB Mobile Patcher (wbp/wbconv.py). All three carry an
-identical copy; the canonical one is Modded_to_WB_1.5_Converter_v1.1/core/wbconv.py. After editing it run the
+identical copy; the canonical one is WB_Converters/Modded_to_WB_1.5/core/wbconv.py. After editing it run the
 patcher's `python tools/sync_wbconv.py` (copies it to the others; `--check` only reports).
 
 What it knows (checked against the engines' own code, see the WB Mobile Patcher's ENGINE_ARCHITECTURE_REPORT.md):

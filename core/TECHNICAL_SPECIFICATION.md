@@ -1799,8 +1799,10 @@ Source: `wbp/packs.py`, `classify_custom_pack`
 ### 47. [DR-41] [Companion Converters] Bi-Directional Dual-Architecture Converter Suite
 
 - **Tools**:
-  - `Modded_to_WB_1.5_Converter_v1.1` (Launcher: `Convert_to_WB_1.5.bat`)
-  - `WB_1.5_to_Modded_Converter_v1.1` (Launcher: `Convert_from_WB_1.5.bat`)
+  - `WB_Converters/Modded_to_WB_1.5` (Launcher: `Convert_to_WB_1.5.bat`)
+  - `WB_Converters/WB_1.5_to_Modded` (Launcher: `Convert_from_WB_1.5.bat`, plus `Repair_Deepthroat.bat`)
+
+  Both live in the `WB_Converters` repository, next to this patcher.
 
 #### Architectural Role
 Provides lossless cross-engine mod portability between legacy split-category engines (ModRoom v3.3, Deeproom 4.0, Vanilla v1.2) and modern Steam-standard unified `custom/` architecture (Wife's Bedroom v1.5):
@@ -1816,9 +1818,9 @@ Provides lossless cross-engine mod portability between legacy split-category eng
      - **`output/ModRoom_Mods/`**: Legacy `_0.png` naming with distortion unlinking and Universal Wife Shield for ModRoom v3.3.
      - **`output/Deeproom_Mods/`**: Standard canonical unnumbered naming with Universal Wife Shield for Deeproom 4.0.
 
-Both converters share `wbconv.py` (four identical copies: both converters, the patcher's `wbp/` and the Custom Studio's `backend/`; `tools/sync_wbconv.py` keeps them equal). They convert in a staging folder and write the destination only when a pack was produced, support `--dry-run` and write a per-pack conversion report. Lossy frame conversion needs `--approximate`; the partner X-ray crop applies only to packs with a `custom_data.wife`; a 10-frame partner portrait is kept as authored for ModRoom. Pack folder names pass through `safe_dirname()`, which removes control and invisible characters and stacked combining marks, replaces characters Windows forbids and avoids device names, and a name the operating system still refuses falls back to the pack's folder name and then to a hash.
+Both converters share `wbconv.py` (four identical copies: both converters in `WB_Converters`, whose `Modded_to_WB_1.5/core/wbconv.py` is the canonical one, the patcher's `wbp/` and the Custom Studio's `backend/`; `tools/sync_wbconv.py` keeps them equal). They convert in a staging folder and write the destination only when a pack was produced, support `--dry-run` and write a per-pack conversion report. Lossy frame conversion needs `--approximate`; the partner X-ray crop applies only to packs with a `custom_data.wife`; a 10-frame partner portrait is kept as authored for ModRoom. Pack folder names pass through `safe_dirname()`, which removes control and invisible characters and stacked combining marks, replaces characters Windows forbids and avoids device names, and a name the operating system still refuses falls back to the pack's folder name and then to a hash.
 
-Source: converters/Modded_to_WB_1.5.py; converters/WB_1.5_to_Modded.py
+Source: WB_Converters/Modded_to_WB_1.5/Modded_to_WB_1.5.py; WB_Converters/WB_1.5_to_Modded/WB_1.5_to_Modded.py
 
 ---
 
@@ -1966,7 +1968,7 @@ Source: wbp/toy_native.py; wbp/toy.py export_toybridge_companion_suite
 
 ### 52. [TB-11] [ToyBridge 1.5.3] Descriptor [info] Section Synthesis & Safe Fallback Architecture
 
-- **Target Modules**: `converters/Modded_to_WB_1.5.py`
+- **Target Modules**: `WB_Converters/Modded_to_WB_1.5/Modded_to_WB_1.5.py`
 - **Function**: `normalize_pack_slug()`
 
 #### Architectural Role
@@ -1984,7 +1986,7 @@ def normalize_pack_slug(name: str) -> str:
     return re.sub(r"\s+", "_", s)
 ```
 
-Source: converters/Modded_to_WB_1.5.py; converters/WB_1.5_to_Modded.py
+Source: WB_Converters/Modded_to_WB_1.5/Modded_to_WB_1.5.py; WB_Converters/WB_1.5_to_Modded/WB_1.5_to_Modded.py
 
 ---
 
@@ -1992,7 +1994,7 @@ Source: converters/Modded_to_WB_1.5.py; converters/WB_1.5_to_Modded.py
 
 ### 53. [DR-42] [3-Tier Duplicate Pipeline] Automated Cross-Folder & Multi-Content Duplicate Detection Architecture
 
-- **Target Modules**: `wbp/packs.py`, `converters/Modded_to_WB_1.5.py`
+- **Target Modules**: `wbp/packs.py`, `WB_Converters/Modded_to_WB_1.5/Modded_to_WB_1.5.py`
 - **Function**: `plan_duplicate_skips()`
 - **Flags**: `--move-skipped`
 
@@ -2020,7 +2022,7 @@ def detect_intrinsic_category(pack_path: Path) -> str:
 // ...
 ```
 
-Source: wbp/packs.py; converters/Modded_to_WB_1.5.py
+Source: wbp/packs.py; WB_Converters/Modded_to_WB_1.5/Modded_to_WB_1.5.py
 
 
 ### 54. [DR-43] [Deeproom 4.0.3 Kiwami Engine Architecture] Container Traversal, Manifest Dual-Routing & INI Specification

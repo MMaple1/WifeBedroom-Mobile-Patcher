@@ -1,18 +1,19 @@
 """Keep the four copies of wbconv.py identical (two converters, the patcher, the Custom Studio).
 
-  python tools/sync_wbconv.py          copy the canonical file over the other two
+  python tools/sync_wbconv.py          copy the canonical file over the other three
   python tools/sync_wbconv.py --check  report only; exit 1 if they differ
 
-Canonical: ../Modded_to_WB_1.5_Converter_v1.1/core/wbconv.py. Copies: ../WB_1.5_to_Modded_Converter_v1.1/core/wbconv.py
-and this repo's wbp/wbconv.py. A sibling repo that is not present is skipped.
+Canonical: ../WB_Converters/Modded_to_WB_1.5/core/wbconv.py. Copies: ../WB_Converters/WB_1.5_to_Modded/core/wbconv.py,
+this repo's wbp/wbconv.py and ../Wifes_Bedroom_Custom_Studio/backend/wbconv.py. A folder that is not present is skipped.
 """
 import shutil
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CANON = ROOT.parent / "Modded_to_WB_1.5_Converter_v1.1" / "core" / "wbconv.py"
-COPIES = [ROOT.parent / "WB_1.5_to_Modded_Converter_v1.1" / "core" / "wbconv.py", ROOT / "wbp" / "wbconv.py",
+CONVERTERS = ROOT.parent / "WB_Converters"
+CANON = CONVERTERS / "Modded_to_WB_1.5" / "core" / "wbconv.py"
+COPIES = [CONVERTERS / "WB_1.5_to_Modded" / "core" / "wbconv.py", ROOT / "wbp" / "wbconv.py",
           ROOT.parent / "Wifes_Bedroom_Custom_Studio" / "backend" / "wbconv.py"]
 
 
