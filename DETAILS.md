@@ -53,7 +53,7 @@ Features differ across target engines:
 - **X-ray Overlay Alignment (Deeproom):** Enabled by default (`--no-xray-origins` disables). Compares pack X-ray frames against mating-press art; if misaligned, writes corrected origins into the descriptor inside the APK without modifying source folders. Logged to `output/<apk>_xray_origins.txt`.
 - **Duplicate Tiers:** Evaluates matching folder or `[info]` names, verifies SHA-256 hashes of key art (portraits, mating sheets, backgrounds, audio, dialogue), and scores copies to preserve the best version (correct engine category, richest content, avoiding "Copy"/"(2)"/"_old").
 - **Preservation & Quarantine:** Skipped packs are never modified or deleted from your mod folder. Use `--no-quarantine-duplicates` to force-include all duplicate copies. Use `--move-skipped` to relocate skipped packs to `output/quarantine/<date-time>/` without overwriting or deleting existing data.
-- **Frame Conversions:** Bridging sprite names between ModRoom (`_0.png`) and standard formats adjusts frame counts via blank padding by default. Frame dropping occurs only when `--approximate` is passed.
+- **Frame Conversions:** Bridging sprite names between ModRoom (`_0.png`) and standard formats adjusts frame counts via blank padding by default. Frame dropping occurs only when `--approximate` is passed. A partner's standard 10-frame portrait is re-laid out as ModRoom's 17-frame portrait (no frames dropped).
 
 ### Hardware Telemetry (Strictly Optional)
 Disabled by default; the tool prompts before applying telemetry patches. Game-code hooks are embedded in the patcher (`wbp/toy_native.py` and `core/gml_patches/native_toy/`) across Deeproom, ModRoom, and v1.5 without external dependencies. Direct mode operates natively against Intiface Central. Bridge and beat-sync modes connect to external PC ToyBridge launcher binaries (`ToyLauncher.exe`, `ButtplugBridge.exe`, `HmvLive.exe`); `--export-toy-tools` copies these to `output/Telemetry_Suite/` from `tools/toybridge/` or `%LOCALAPPDATA%\Programs\ToyBridgeLauncher\`.
@@ -145,7 +145,7 @@ usage: WB_Mobile_Patcher.py [-h] [-b BASE_APK] [-o OUTPUT] [-y] [--clean] [--fas
 ### Source Synchronization & Bundle Maintenance
 - **`wbconv.py` Rules:** `wbp/wbconv.py` is one of four synchronized copies (both converters in the `WB_Converters` repo, this patcher, and Custom Studio backend); the canonical one is `WB_Converters/Modded_to_WB_1.5/core/wbconv.py`. Run `python tools/sync_wbconv.py` to synchronize, or add `--check` to verify consistency.
 - **Deeproom Engine Bundle:** Deeproom GML code packaged in `core/mobile_engine.bundle` is maintained in `core/bundle_src/`. Rebuild using `python tools/bundle_tool.py pack` and validate using `python tools/bundle_tool.py check`.
-- **Deepthroat repair:** `python tools/repair_deepthroat.py <custom_wives> [--apply]` undoes the `[deepthroat]` block that converters before 2026-11-17 added to Deeproom partners (`wbconv.repair_deepthroat_folder`; only blocks in the old converter's exact shape, dry run by default, originals zipped next to the folder).
+- **Deepthroat repair:** `python WB_1.5_to_Modded.py --repair-deepthroat <custom_wives>` (in WB_Converters; `-y` applies, `--dry-run` lists) undoes the `[deepthroat]` block that converters before 2026-11-17 added to Deeproom partners (`wbconv.repair_deepthroat_folder`; only blocks in the old converter's exact shape, dry run by default, originals zipped next to the folder).
 - **GML Fallback Snippets:** Dynamic replacement scripts are stored as individual files under `core/gml_patches/<function>/<name>.gml` and read byte-for-byte. Line endings are enforced by `.gitattributes` as non-text binary data.
 - **Regression Testing:**
   - `python -m unittest discover -s tests`: Runs test suites, verifying that documentation excerpts match implementation code.
@@ -185,7 +185,7 @@ usage: WB_Mobile_Patcher.py [-h] [-b BASE_APK] [-o OUTPUT] [-y] [--clean] [--fas
 - **Missing Content in-Game:** Inspect `output/<apk name>_skipped_packs.md` for exclusion justifications and remediation instructions. Missing required sprites are the primary cause in ModRoom.
 - **Offset or Distorted Sprites:** Review `output/<apk name>_format_notes.txt` to identify packs bridged across inconsistent frame schemas.
 - **ModRoom "Variable Index [0] out of range [0] - custom_background_name_array":** Patched in v1.2 via game-native bedroom checks. Recompile with current versions if encountered.
-- **ModRoom "draw_sprite_ext ... requested -1":** Caused by missing pack sprites. Fixed by exclusion checks and draw guards in v1.2.
+- **ModRoom "draw_sprite_ext ... requested -1":** Caused by missing pack sprites. Fixed by exclusion checks and draw guards in v1.2. The guard functions live at the top of `Draw_0`; v1.2.2 moved them there from `Create_0` after a phone showed "tc_safe_sprite_ext not set before reading it".
 - **"Permission denied" in `output/`:** Occurs when previous APK builds are locked by external processes (cloud sync services, Explorer preview handlers, virus scanners). The tool retries, then falls back to `<name>_<date-time>.apk`. Pause file syncing on `output/` to prevent collisions.
 - **Device Install Failure:** Verify "Install unknown apps" is granted to the installer app, and uninstall existing builds signed with differing keys.
 

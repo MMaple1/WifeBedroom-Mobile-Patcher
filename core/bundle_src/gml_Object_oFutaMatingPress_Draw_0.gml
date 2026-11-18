@@ -597,13 +597,13 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
             _rm_f = tc_ff_next();
         }
         tc_ff_close();
-        _rm_f = tc_ff_first(_pm_save + "/dialogue_packs/*", 16);
+        _rm_f = tc_ff_first(_pm_save + "/custom_stuff/dialogue_packs/*", 16);
         while (_rm_f != "")
         {
-            if (_rm_f != "." && _rm_f != ".." && tc_dir_exists(_pm_save + "/dialogue_packs/" + _rm_f) == false)
+            if (_rm_f != "." && _rm_f != ".." && tc_dir_exists(_pm_save + "/custom_stuff/dialogue_packs/" + _rm_f) == false)
             {
                 array_push(pm_pick_list, "DIALOGUE - " + _rm_f);
-                array_push(pm_pick_paths, _pm_save + "/dialogue_packs/" + _rm_f);
+                array_push(pm_pick_paths, _pm_save + "/custom_stuff/dialogue_packs/" + _rm_f);
                 array_push(pm_pick_kinds, 1);
             }
             _rm_f = tc_ff_next();
@@ -718,12 +718,13 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                 var _pm_fl = string_lower(_pm_fn);
                 if (string_copy(_pm_fl, string_length(_pm_fl) - 4, 5) == ".json")
                 {
-                    if (!tc_dir_exists(_pm_save + "/dialogue_packs"))
+                    if (!tc_dir_exists(_pm_save + "/custom_stuff/dialogue_packs"))
                     {
-                        directory_create(_pm_save + "/dialogue_packs");
+                        if (!directory_exists(_pm_save + "/custom_stuff")) directory_create(_pm_save + "/custom_stuff");
+                        directory_create(_pm_save + "/custom_stuff/dialogue_packs");
                     }
-                    file_copy(_pm_zip, _pm_save + "/dialogue_packs/" + _pm_fn);
-                    pm_registry_add(_pm_save + "/dialogue_packs/" + _pm_fn);
+                    file_copy(_pm_zip, _pm_save + "/custom_stuff/dialogue_packs/" + _pm_fn);
+                    pm_registry_add(_pm_save + "/custom_stuff/dialogue_packs/" + _pm_fn);
                     _pm_dlg++;
                     pm_status = "Added dialogue pack " + _pm_fn + " - restart the game to use it.";
                 }
@@ -1022,12 +1023,13 @@ if ((os_type == os_android || os_type == os_ios) && title == true && pm_dialog =
                             }
                             else if (string_copy(_pm_el, string_length(_pm_el) - 4, 5) == ".json")
                             {
-                                if (!tc_dir_exists(_pm_save + "/dialogue_packs"))
+                                if (!tc_dir_exists(_pm_save + "/custom_stuff/dialogue_packs"))
                                 {
-                                    directory_create(_pm_save + "/dialogue_packs");
+                                    if (!directory_exists(_pm_save + "/custom_stuff")) directory_create(_pm_save + "/custom_stuff");
+                                    directory_create(_pm_save + "/custom_stuff/dialogue_packs");
                                 }
-                                file_copy(_pm_rd + "/" + _pm_en, _pm_save + "/dialogue_packs/" + _pm_en);
-                                pm_registry_add(_pm_save + "/dialogue_packs/" + _pm_en);
+                                file_copy(_pm_rd + "/" + _pm_en, _pm_save + "/custom_stuff/dialogue_packs/" + _pm_en);
+                                pm_registry_add(_pm_save + "/custom_stuff/dialogue_packs/" + _pm_en);
                                 _pm_dlg++;
                             }
                             else if (string_copy(_pm_el, string_length(_pm_el) - 3, 4) == ".png")

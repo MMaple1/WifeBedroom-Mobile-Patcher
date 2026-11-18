@@ -151,7 +151,8 @@ if (instance_number(oDialogueManager) > 1)
     exit;
 }
 dialogue_files = [];
-var _dlg_pack_dir = (file_exists("custom_stuff/dialogue_packs/_manifest.txt") || file_exists("assets/custom_stuff/dialogue_packs/_manifest.txt")) ? "custom_stuff/dialogue_packs" : "dialogue_packs";
+// Dialogue packs live in custom_stuff/dialogue_packs only; custom_stuff/dialogue holds the game's own sets and is not scanned for packs
+var _dlg_pack_dir = "custom_stuff/dialogue_packs";
 var file_name = tc_ff_first(_dlg_pack_dir + "/*.json", 0);
 while (file_name != "")
 {
@@ -159,18 +160,26 @@ while (file_name != "")
     file_name = tc_ff_next();
 }
 tc_ff_close();
-
-var _dlg_cust_dir = (file_exists("custom_stuff/dialogue/_manifest.txt") || file_exists("assets/custom_stuff/dialogue/_manifest.txt")) ? "custom_stuff/dialogue" : "dialogue";
-var file_name2 = tc_ff_first(_dlg_cust_dir + "/*.json", 0);
-while (file_name2 != "")
+// Packs added on the phone (ADD MOD) sit in the save area's custom_stuff/dialogue_packs, which has no manifest: list them too.
+// GameMaker reads a relative path from the save area first, so load_dialogue_file() finds them under the same name.
+if (os_type == os_android || os_type == os_ios)
 {
-    if (!array_contains(dialogue_files, file_name2))
+    var _dlg_save = game_save_id;
+    while (string_length(_dlg_save) > 1 && string_char_at(_dlg_save, string_length(_dlg_save)) == "/")
     {
-        array_push(dialogue_files, file_name2);
+        _dlg_save = string_copy(_dlg_save, 1, string_length(_dlg_save) - 1);
     }
-    file_name2 = tc_ff_next();
+    var file_name2 = tc_ff_first(_dlg_save + "/custom_stuff/dialogue_packs/*.json", 0);
+    while (file_name2 != "")
+    {
+        if (!array_contains(dialogue_files, file_name2))
+        {
+            array_push(dialogue_files, file_name2);
+        }
+        file_name2 = tc_ff_next();
+    }
+    tc_ff_close();
 }
-tc_ff_close();
 
 function func_load_dialogue(arg0)
 {
@@ -214,33 +223,10 @@ function load_dialogue_file()
     {
         return false;
     }
-    var _file_name = "custom_stuff/dialogue_packs/" + chosen_dialogue;  // Deeproom 4.0.3 location first
+    var _file_name = "custom_stuff/dialogue_packs/" + chosen_dialogue;
     if (!file_exists(_file_name))
     {
-        if (file_exists("dialogue_packs/" + chosen_dialogue))
-        {
-            _file_name = "dialogue_packs/" + chosen_dialogue;
-        }
-        else if (file_exists("custom_stuff/dialogue/" + chosen_dialogue))
-        {
-            _file_name = "custom_stuff/dialogue/" + chosen_dialogue;
-        }
-        else if (file_exists("custom_dialogues/" + chosen_dialogue))
-        {
-            _file_name = "custom_dialogues/" + chosen_dialogue;
-        }
-        else if (file_exists("dialogue/" + chosen_dialogue))
-        {
-            _file_name = "dialogue/" + chosen_dialogue;
-        }
-        else if (file_exists(chosen_dialogue))
-        {
-            _file_name = chosen_dialogue;
-        }
-        else
-        {
-            return false;
-        }
+        return false;
     }
     var _buffer = buffer_load(_file_name);
     if (_buffer == -1)

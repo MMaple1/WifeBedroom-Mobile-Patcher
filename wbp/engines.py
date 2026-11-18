@@ -280,7 +280,6 @@ def patch_mr33_engine_bytecode(utmt_cli, tmp_droid, patched_droid, tmpdir, logge
         log(f"Dynamic Variable Shield (ModRoom v3.x): Safeguarded {len(shielded_vars)} host variable(s) ({var_preview})!", prefix="[+]")
         c0 += "\n" + shield_code
 
-    c0 += gml("patch_mr33_engine_bytecode/safe_draw")
     c0_p.write_text(c0, encoding="utf-8")
 
     # Manifest streaming in oBackground_Create_0 (complete loop replacement)
@@ -311,7 +310,10 @@ def patch_mr33_engine_bytecode(utmt_cli, tmp_droid, patched_droid, tmpdir, logge
         # "draw_sprite_ext argument 1 invalid reference to (sprite) - requested -1"
         n_dsx = d0.count("draw_sprite_ext(")
         n_dsp = d0.count("draw_sprite_part_ext(")
+        # The helpers are defined at the top of Draw_0 itself, not in Create_0: a function declared in Create is a variable of the instance that ran
+        # Create, and a Draw that runs on another instance or before Create ended failed with "tc_safe_sprite_ext not set before reading it"
         d0 = d0.replace("draw_sprite_ext(", "tc_safe_sprite_ext(").replace("draw_sprite_part_ext(", "tc_safe_sprite_part_ext(")
+        d0 = gml("patch_mr33_engine_bytecode/safe_draw") + "\n" + d0  # after the replace: the helpers call the real draw functions
         log(f"Draw_0: guarded {n_dsx} draw_sprite_ext and {n_dsp} draw_sprite_part_ext call(s) against missing sprites.", prefix="[+]")
         d0_p.write_text(d0, encoding="utf-8")
 

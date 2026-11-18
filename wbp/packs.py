@@ -934,6 +934,15 @@ def convert_bridged_strip(src_path, src_name, dst_name, pack_kind, label, approx
         size = wbconv.png_size(src_path)
         if not src_n or not dst_n or src_n == dst_n or not size or size[0] != src_n * fw:
             return src_path
+        if (kind, strip, src_fmt, dst_fmt, src_n, dst_n) == ("wife", "portrait", "standard", "modern", 10, 17):
+            # ModRoom draws partner portraits with the 17-frame modern layout only: lay the 10 standard frames out that way
+            try:
+                tmp = _bridge_tmpdir() / f"{len(BRIDGE_CONVERTED):05d}_{dst_name}"
+                wbconv.write_png(tmp, wbconv.wife_portrait_std_to_modern(wbconv.read_png(src_path), fw))
+            except (wbconv.PngError, OSError, zlib.error):
+                return src_path
+            BRIDGE_CONVERTED.append((label, f"portrait {src_n} to {dst_n} frames (laid out as the modern portrait)"))
+            return tmp
         policy = wbconv._policy(kind, strip, src_n, dst_n)
         if kind == "wife" and strip == "xray" and dst_n < src_n and not has_wife_desc:
             return src_path  # the X-ray crop is only done for packs with a custom_data.wife (as in the converters)

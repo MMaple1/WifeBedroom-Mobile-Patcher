@@ -1814,12 +1814,13 @@ if (os_type == os_android || os_type == os_ios)
                         }
                         else if (string_copy(_pm_el, string_length(_pm_el) - 4, 5) == ".json")
                         {
-                            if (!tc_dir_exists(_pm_save + "/dialogue_packs"))
+                            if (!tc_dir_exists(_pm_save + "/custom_stuff/dialogue_packs"))
                             {
-                                directory_create(_pm_save + "/dialogue_packs");
+                                if (!directory_exists(_pm_save + "/custom_stuff")) directory_create(_pm_save + "/custom_stuff");
+                                directory_create(_pm_save + "/custom_stuff/dialogue_packs");
                             }
-                            file_copy(_pm_rd + "/" + _pm_en, _pm_save + "/dialogue_packs/" + _pm_en);
-                            pm_registry_add(_pm_save + "/dialogue_packs/" + _pm_en);
+                            file_copy(_pm_rd + "/" + _pm_en, _pm_save + "/custom_stuff/dialogue_packs/" + _pm_en);
+                            pm_registry_add(_pm_save + "/custom_stuff/dialogue_packs/" + _pm_en);
                             _pm_dlg++;
                         }
                         else if (string_copy(_pm_el, string_length(_pm_el) - 3, 4) == ".png")
@@ -6880,10 +6881,20 @@ function func_texture_pack_replace(arg0)
 {
     for (var i = 0; i < array_length(sprite_list); i++)
     {
-        var _filename = "custom_stuff/texture_packs/" + arg0 + "/" + sprite_get_name(sprite_list[i]) + ".png";
+        // APK assets are packaged lower-case (sfutacondom.png) and Android lookups are case-sensitive: try both spellings
+        var _spr_nm = sprite_get_name(sprite_list[i]);
+        var _filename = "custom_stuff/texture_packs/" + arg0 + "/" + string_lower(_spr_nm) + ".png";
         if (!file_exists(_filename))
         {
-            _filename = "texture_packs/" + arg0 + "/" + sprite_get_name(sprite_list[i]) + ".png";
+            _filename = "custom_stuff/texture_packs/" + arg0 + "/" + _spr_nm + ".png";
+        }
+        if (!file_exists(_filename))
+        {
+            _filename = "texture_packs/" + arg0 + "/" + string_lower(_spr_nm) + ".png";
+        }
+        if (!file_exists(_filename))
+        {
+            _filename = "texture_packs/" + arg0 + "/" + _spr_nm + ".png";
         }
         if (file_exists(_filename))
         {

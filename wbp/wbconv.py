@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 __all__ = ["PngError", "Image", "read_png", "write_png", "pad_width", "crop_width", "sha256_file",
-           "safe_extract", "unique_name", "png_size", "select_frames", "FRAME_MAPS", "Ini", "convert_descriptor_bytes", "Result", "Report",
+           "safe_extract", "unique_name", "png_size", "select_frames", "frame_is_empty", "wife_portrait_std_to_modern", "FRAME_MAPS", "Ini", "convert_descriptor_bytes", "Result", "Report",
            "to_v15", "from_v15", "modroom_missing", "detect_format", "FRAMES", "NAMES", "publish_category",
            "progress", "say", "Spinner", "strip_frames", "frame_width_of", "pack_notes",
            "repair_deepthroat_bytes", "repair_deepthroat_folder", "repair_deepthroat_main"]
@@ -267,6 +267,31 @@ def select_frames(img: Image, frame_w: int, indices) -> Image:
             out += r[i * frame_w * 4:(i + 1) * frame_w * 4]
         rows.append(out)
     return Image(len(indices) * frame_w, img.height, rows)
+
+
+def frame_is_empty(img: Image, frame_w: int, i: int) -> bool:
+    """True when frame i of the strip has no visible pixel (every alpha is 0)."""
+    lo, hi = i * frame_w * 4, (i + 1) * frame_w * 4
+    return all(not any(r[lo + 3:hi:4]) for r in img.rows)
+
+
+def wife_portrait_std_to_modern(img: Image, frame_w: int) -> Image:
+    """A 10-frame standard partner portrait laid out as the 17-frame modern one, with the frames Deeproom 4.0.3 draws
+    for each layer of a standard partner: 0-5 as they are (hair back, body, chest, layer 3, face, climax face; the
+    standard face frames already hold the eyes and mouth), bangs 6 (7 when 6 is empty), layer 12 = 8 (drawn at half
+    the face offset, usually nipples), front bangs 13 = 9 (7 when 9 is empty). The modern eye frames 7-11 and blush
+    frames 14-16 stay blank: a standard pack has none. No frame is dropped."""
+    def pick(i, fallback):
+        return fallback if frame_is_empty(img, frame_w, i) else i
+    blank = Image(frame_w, img.height, [bytearray(frame_w * 4) for _ in range(img.height)])
+    order = [0, 1, 2, 3, 4, 5, pick(6, 7), None, None, None, None, None, 8, pick(9, 7), None, None, None]
+    rows = []
+    for y, r in enumerate(img.rows):
+        out = bytearray()
+        for i in order:
+            out += blank.rows[y] if i is None else r[i * frame_w * 4:(i + 1) * frame_w * 4]
+        rows.append(out)
+    return Image(17 * frame_w, img.height, rows)
 
 
 def pad_width(img: Image, new_w: int) -> Image:
@@ -927,6 +952,8 @@ def _convert_strips(pack_dir: Path, kind, src_fmt, dst_fmt, approximate, res: Re
             res.converted.append(f"{strip} already {dst_n} frames, renamed")
             continue
         policy = _policy(kind, strip, src_n, dst_n)
+        if (kind, strip, src_fmt, dst_fmt, src_n, dst_n) == ("wife", "portrait", "standard", "modern", 10, 17):
+            policy = "map"  # exact layout map, nothing dropped (wife_portrait_std_to_modern)
         if kind == "wife" and strip == "xray" and dst_n < src_n and not (pack_dir / "custom_data.wife").exists():
             # a pack without custom_data.wife (a v1.5 .spouse pack): keep the strip as authored, only renamed
             dst = pack_dir / dst_name
@@ -953,7 +980,10 @@ def _convert_strips(pack_dir: Path, kind, src_fmt, dst_fmt, approximate, res: Re
             res.skipped.append(f"{strip}: width {img.width}px does not divide into {src_n} frames")
             continue
         picked = FRAME_MAPS.get((kind, strip)) if (src_fmt == "modern" and dst_fmt == "standard") else None
-        if picked and len(picked) == dst_n and max(picked) < src_n and policy == "approximate":
+        if policy == "map":
+            out = wife_portrait_std_to_modern(img, fw)
+            how = "laid out as the modern portrait"
+        elif picked and len(picked) == dst_n and max(picked) < src_n and policy == "approximate":
             out = select_frames(img, fw, picked)
             how = "frames " + ",".join(str(i) for i in picked) + " kept"
         else:
@@ -1036,7 +1066,7 @@ def from_v15(pack_dir, kind, target, name, approximate=False) -> Result:
         for strip in list(NAMES[(kind, "standard")]):
             if any(item.startswith(strip + " ") or item.startswith(strip + ":") for item in res.skipped):
                 if strip == "portrait":
-                    # ModRoom v3.3 natively supports 10-frame portraits via legacy_custom_portrait; keep intact
+                    # a portrait that could not be re-laid out (odd width): keep it; ModRoom still lists the pack
                     continue
                 leftover = _find_source(pack_dir, kind, "standard", strip)
                 if leftover is not None:

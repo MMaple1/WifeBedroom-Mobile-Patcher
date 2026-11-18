@@ -211,7 +211,7 @@ Open this script to integrate all rendering, UI modal gating, and touch controls
 
 ### 5. File: `gml_Object_oDialogueManager_Create_0`
 - **`[DR-03]`**: Safe dialogue JSON parsing with `try / catch` blocks.
-- **`[DR-03]`**: Dialogue pack precedence: `dialogue_packs/` preferred over built-in text.
+- **`[DR-03]`**: Dialogue packs are read from `custom_stuff/dialogue_packs/` only (Deeproom); the `dialogue/` folder is not scanned for packs.
 
 ### 6. Android Platform Packaging Layer
 - **`[TB-05]`**: Bundle `phone_import.dex` containing `wbmods.PhoneImportActivity` as secondary DEX.
@@ -324,10 +324,10 @@ Source: bundle_src/gml_Object_oBackground_Create_0.gml, tc_norm_path
 - **Target Event**: `Create (0)`
 - **Anchor**: `dialogue_files` initialization and `load_dialogue_file()`
 
-Scans multiple directories for dialogue JSON files using manifest-aware stream scanning. Includes a safe parser that handles JSON syntax errors without crashing the engine.
+Lists dialogue packs from `custom_stuff/dialogue_packs/*.json` only, using manifest-aware stream scanning. The `custom_stuff/dialogue/` folder holds the game's own dialogue sets and `livestream.json`; it is never scanned for packs, and a pack is loaded only from `custom_stuff/dialogue_packs/`. Includes a safe parser that handles JSON syntax errors without crashing the engine.
 
 ```gml
-var _dlg_pack_dir = (file_exists("custom_stuff/dialogue_packs/_manifest.txt") || file_exists("assets/custom_stuff/dialogue_packs/_manifest.txt")) ? "custom_stuff/dialogue_packs" : "dialogue_packs";
+var _dlg_pack_dir = "custom_stuff/dialogue_packs";
 var file_name = tc_ff_first(_dlg_pack_dir + "/*.json", 0);
 while (file_name != "")
 {
@@ -1369,7 +1369,7 @@ Source: core/gml_patches/apply_hyper_sizes/hyper_toggle.gml, hyper_toggle
 
 `patch_game_apk()` edits `AndroidManifest.xml` via `AxmlEditor.add_import_activity()` to register `wbmods.PhoneImportActivity` for handling VIEW, SEND, and SEND_MULTIPLE intents targeting `.zip` and `.json` mod archives. If registered successfully, `phone_import.dex` is added to the target APK as the next free `classesN.dex` (usually `classes2.dex`) at root as the next available DEX file (`classes2.dex`). Incoming archives are stored in the app-private `files/phone_inbox/` directory.
 
-**Phone mods in the game (2026-11-17).** The title screen's ADD MOD dialog (`Other_63`) takes an `https://` link (downloaded with `http_get_file`) or a local `.zip` / `.json` path (`/sdcard/`, `/storage/emulated/0/`, `file://`), which is copied into `phone_inbox/`; the inbox check in Draw (0) imports it like a shared file. On Android, `tc_norm_path` keeps paths inside `game_save_id` absolute (`tc_is_save_path`), and `tc_ff_first` lists such folders with `file_find_first` instead of a `_manifest.txt`, because folders the game creates have no manifest. Each import also appends the packs, bedrooms, texture packs, voice packs and dialogue files it creates to `<save>/phone_mods_registry.txt` (`pm_registry_add`); the startup reload, the REMOVE MOD list and the VOICES list read it (`pm_registry_read`) besides scanning, and removing a mod drops it (`pm_registry_remove`). Remove searches up to 8 folder levels below `phone_mods/`; all imports create `phone_voices/` before copying a voice pack. Checked by `tests/test_phone_mods_registry.py`; not device-tested.
+**Phone mods in the game (2026-11-17).** The title screen's ADD MOD dialog (`Other_63`) takes an `https://` link (downloaded with `http_get_file`) or a local `.zip` / `.json` path (`/sdcard/`, `/storage/emulated/0/`, `file://`), which is copied into `phone_inbox/`; the inbox check in Draw (0) imports it like a shared file. On Android, `tc_norm_path` keeps paths inside `game_save_id` absolute (`tc_is_save_path`), and `tc_ff_first` lists such folders with `file_find_first` instead of a `_manifest.txt`, because folders the game creates have no manifest. Each import also appends the packs, bedrooms, texture packs, voice packs and dialogue files it creates to `<save>/phone_mods_registry.txt` (`pm_registry_add`); the startup reload, the REMOVE MOD list and the VOICES list read it (`pm_registry_read`) besides scanning, and removing a mod drops it (`pm_registry_remove`). Remove searches up to 8 folder levels below `phone_mods/`; all imports create `phone_voices/` before copying a voice pack. Checked by `tests/test_phone_mods_registry.py`; not device-tested. Dialogue packs added on the phone go to `<save>/custom_stuff/dialogue_packs/`; `oDialogueManager` lists that folder (real file search, no manifest) after the APK's `custom_stuff/dialogue_packs/` manifest, and GameMaker reads the save-area copy first, so `load_dialogue_file()` finds them by name.
 
 Source: wbp/apk.py, patch_game_apk
 
@@ -1420,10 +1420,9 @@ Evaluates custom pack folders before ingestion to prevent APK build aborts or ru
 0. Besides the checks below, `missing_sprites()` skips packs lacking a sprite the target engine needs, and for Deeproom `deeproom_strip_problems()` skips packs whose strips do not divide into the frame count their loader uses (or partners without a portrait).
 1. Numbered-Alt Check: Flags packs containing filenames matching `^custom_data_\d+\.(futa|spouse)$` (case-insensitive) as non-portable.
 2. Recognized Data File Check: Validates presence of recognized descriptor files (`custom_data.futa`, `custom_data.wife`, `custom_data.spouse`, `custom_data.bedroom`).
-3. Skipping: Non-portable packs and duplicate entries are excluded from APK asset ingestion and manifests. A skip report is generated in Markdown and JSON formats (`_skipped_packs.md` / `_skipped_packs.json` or `_validation.md` / `_validation.json` during dry runs).
-4. Quarantine: When `--move-skipped` is enabled, skipped packs are moved to a new timestamped folder under `output/quarantine/<YYYYMMDD-HHMMSS>/<kind>/<cat>/`. Existing destination files are not overwritten or deleted; collision handling appends incremental numeric suffixes (`_<k>`).
+3. Skipping and quarantine: non-portable packs and duplicates are left out of the APK assets and manifests and listed in a report; `--move-skipped` moves them aside. Details in section 64.
 
-Source: wbp/packs.py, classify_custom_pack, plan_pack_skips, move_skipped_packs; wbp/apk.py, patch_game_apk
+Source: wbp/packs.py, classify_custom_pack, plan_pack_skips, move_skipped_packs
 
 ---
 
@@ -1659,7 +1658,7 @@ Assets are gathered across custom character and sound directories, scanning for 
             LOGGER.log(f"Discovered {len(custom_assets)} custom asset file(s).")
 ```
 
-Besides renaming, the bridge converts frame counts. `convert_bridged_strip()` in `wbp/packs.py` uses the shared `wbp/wbconv.py`: when a strip's real width matches the source format, it is padded with blank frames to the target format's frame count (lossless). Conversions that drop frames, and every portrait change, happen only with `--approximate`; otherwise the strip is renamed unchanged and listed in `<apk>_format_notes.txt`. The partner X-ray crop (4 to 3 frames) drops a frame, so it is done only with `--approximate`, and only for packs that carry a `custom_data.wife`; otherwise the X-ray keeps its 4 frames. A partner pack with only a reverse cowgirl gets that strip copied, padded to 11 frames, as the forward cowgirl.
+Besides renaming, the bridge converts frame counts. `convert_bridged_strip()` in `wbp/packs.py` uses the shared `wbp/wbconv.py`: when a strip's real width matches the source format, it is padded with blank frames to the target format's frame count (lossless). Conversions that drop frames, and every portrait change, happen only with `--approximate`; otherwise the strip is renamed unchanged and listed in `<apk>_format_notes.txt`. The partner X-ray crop (4 to 3 frames) drops a frame, so it is done only with `--approximate`, and only for packs that carry a `custom_data.wife`; otherwise the X-ray keeps its 4 frames. A partner pack with only a reverse cowgirl gets that strip copied, padded to 11 frames, as the forward cowgirl. One case is an exact re-layout instead: a partner's standard 10-frame portrait bridged to ModRoom's `custom_wife_portrait_0.png` is laid out as the 17-frame modern portrait by `wbconv.wife_portrait_std_to_modern()` (frames 0-5 as they are, the standard face frames 4-5 already holding eyes and mouth; bangs 6 = 6 or 7, layer 12 = 8, front bangs 13 = 9 or 7; eye frames 7-11 and blush 14-16 blank; the frames Deeproom 4.0.3 draws for a standard partner), because ModRoom draws partner portraits with the modern layout only.
 
 Source: `wbp/apk.py`, `patch_game_apk`
 
@@ -1999,14 +1998,14 @@ Source: WB_Converters/Modded_to_WB_1.5/Modded_to_WB_1.5.py; WB_Converters/WB_1.5
 - **Flags**: `--move-skipped`
 
 #### Architectural Role
-Prevents asset collisions and character clobbering by identifying duplicate packs across different source folders or categories before they are added to the APK.
+Prevents asset collisions and character clobbering by identifying duplicate packs across different source folders or categories before they are added to the APK. `plan_duplicate_skips()` only decides: it never moves or deletes anything (moving is `--move-skipped`, section 64). Packs already skipped as incompatible are passed in as `exclude`, so a skipped pack is never chosen as the one to keep.
 
 #### Pipeline Tiers
-1. **Tier 1 (Name & Slug Match)**: Uses `normalize_pack_slug()` to strip tags and read internal `[info] name=` from descriptors.
-2. **Tier 2 (Asset Fingerprinting)**: Not explicitly detailed in snippet logic but identified as part of the `plan_duplicate_skips` role for fingerprinting core sprites.
-3. **Tier 3 (Canonical Selection & Scoring)**: 
-   - **Category Affinity**: `detect_intrinsic_category()` inspects headers and sprites. A pack receives a scoring bonus if located in its matching folder (e.g., a wife pack in `custom_wives/`).
-   - **Quarantine**: If multiple versions of a pack exist, the highest-scoring version is kept. Others are skipped and recorded in `skipped_packs.md`. If `--move-skipped` is enabled, duplicates are moved to a quarantine folder.
+Two packs are compared only when `is_compatible_category()` allows it: the same category, or loose `custom/` against `custom_futas`, `custom_wives` or `custom_bedrooms`, or sounds against music, or the dialogue folders. `custom_futas` and `custom_wives` are different gameplay roles and never match each other. Matching packs are joined into groups, so A=B and B=C puts all three in one group.
+1. **Tier 2 (asset fingerprints, checked first)**: `get_pack_fingerprints()` hashes (SHA-256) the portrait, the mating-press sheet, the background, the first audio file and, in dialogue folders, the first `.json`. Two packs with the same hash for any one of these are duplicates.
+2. **Tier 1 (name match, only if no hash matched)**: `normalize_pack_slug()` strips tags from the folder name; the descriptor's `[info] name=` (`extract_pack_info_name()`) is compared too, except generic names such as `custom` or `unknown`. Equal slugs make the packs duplicates. This tier looks at names only, so two different characters with one name are grouped; the skip report states which tier matched, so check it.
+3. **Tier 3 (which one is kept)**: `score_pack_canonical()` ranks each group and keeps the highest score; the rest are recorded in the skip report with the reason, the score of each pack and the kept path.
+   - **Category affinity**: `detect_intrinsic_category()` inspects headers and sprites. A pack scores higher in the folder that matches what it is (a wife pack in `custom_wives/`), and higher in the folder layout the target engine reads (Deeproom: inside `custom_stuff/`; ModRoom v3.3: not inside it; v1.5: loose `custom/`). More files, audio, and cowgirl or X-ray sprites score higher; copy-style names (`- Copy`, `_old`, `_backup`, `(2)`) and long all-digit names score lower; a newer file time breaks ties.
 
 ```python
 def detect_intrinsic_category(pack_path: Path) -> str:
@@ -2035,10 +2034,8 @@ Deeproom 4.0.3 Kiwami introduces a centralized `custom_stuff/` root directory co
 
 ```gml
 dialogue_files = [];
-var _dlg_pack_dir = (file_exists("custom_stuff/dialogue_packs/_manifest.txt") || file_exists("assets/custom_stuff/dialogue_packs/_manifest.txt")) ? "custom_stuff/dialogue_packs" : "dialogue_packs";
+var _dlg_pack_dir = "custom_stuff/dialogue_packs";
 var file_name = tc_ff_first(_dlg_pack_dir + "/*.json", 0);
-// ...
-var _dlg_cust_dir = (file_exists("custom_stuff/dialogue/_manifest.txt") || file_exists("assets/custom_stuff/dialogue/_manifest.txt")) ? "custom_stuff/dialogue" : "dialogue";
 ```
 
 #### INI Specification & Stats
@@ -2168,11 +2165,13 @@ Source: bundle_src/gml_Object_oFutaMatingPress_Create_0.gml, func_play_condom_br
 - **Target Modules**: `bundle_src/gml_Object_oFutaMatingPress_Create_0.gml`, `bundle_src/gml_Object_oBackground_Create_0.gml`
 - **Applicable Engines**: ModRoom v3.3, Deeproom 4.0 Standard
 
-#### Mathematical Formulation & Technical Problem
-Engines such as ModRoom v3.3 and Deeproom 4.0 use `sprite_add` with fixed frame counts for different categories (e.g., 4 frames for backgrounds, 17 frames for certain futa portraits). If a sprite strip contains an incorrect frame count, GameMaker's uniform slicing leads to visual tearing or offset frames.
+#### What this section covers
+Section 45 lists the frame counts each loader uses. This section is only about a strip that does not match its count. `sprite_add` cuts a strip into equal frames, so a strip with the wrong number of frames is sliced in the wrong places and the sprite shows torn or shifted frames (for example, a background is cut into 4 frames).
 
 #### Implementation
-The code ensures that `sprite_add` is called with the specific frame counts expected by the engine's rendering logic. Asset loading scripts specify the subimage count to ensure correct internal slicing of the texture strip.
+Two checks, one at build time and one in the game:
+- **Build time:** for Deeproom, `deeproom_strip_problems()` skips a pack whose strips do not divide into the frame count its loader uses (section 34), and the pack appears in the skip report (section 64).
+- **In the game:** the loader calls `sprite_add` with the expected frame count, then deletes the sprite and rejects the file if fewer frames came back:
 
 ```gml
     var _spr = sprite_add(_bg_path, 4, false, false, 220, 128);
@@ -2332,7 +2331,7 @@ Source: wbp/packs.py, classify_custom_pack; wbp/apk.py, patch_game_apk
 
 | Feature | What it does | Implementation |
 |---|---|---|
-| **Texture packs** | Swaps vanilla sprites for PNGs in `texture_packs/` | `func_texture_pack_replace` replaces `sprite_list` entries |
+| **Texture packs** | Swaps vanilla sprites for PNGs in `custom_stuff/texture_packs/<pack>/` (then `texture_packs/`), trying the lower-case file name first because the APK stores assets lower-case and Android lookups are case-sensitive | `func_texture_pack_replace` replaces `sprite_list` entries |
 | **Lazy thumbnails** | Character-grid thumbnails load when shown | `inject_lazy_thumbnails_into_draw` injected into Draw |
 | **Strict custom selection** | Forces custom stats/sprites for selected mods | `enforce_strict_custom_selection` injected into Draw |
 | **Stat application guards** | Prevents sprite -1 crashes | Defensive checks in `func_apply_custom_futa_stats` |
