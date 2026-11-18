@@ -47,7 +47,7 @@ class IniTests(unittest.TestCase):
         ini = Ini(convert(SPOUSE, "spouse", "v15_spouse", "X"))
         self.assertEqual(ini.get("sprite", "xray_x"), "50")
         self.assertEqual(ini.get("sprite", "xray_y"), "51")
-        self.assertEqual(ini.get("sprite", "deepthroat_origin_y"), "41")
+        self.assertEqual(ini.get("sprite", "deepthroat_origin_y"), '"111.000000"')  # Deeproom 41 + 70
 
     def test_info_name_not_added_when_present(self):
         data = b'[info]\nname="Real"\n[sprite]\norigin_x=1\n'

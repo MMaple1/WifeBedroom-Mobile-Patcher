@@ -22,12 +22,31 @@ _POSE_MAP = [
     (("reverse_cowgirl", "origin_x"), ("sprite", "cowgirl_origin_x")),
     (("reverse_cowgirl", "origin_y"), ("sprite", "cowgirl_origin_y")),
 ]
-# v1.5 reads the X-ray origin and the deepthroat height from [sprite]
+# v1.5 reads the X-ray origin from [sprite]; the deepthroat height is not 1:1 (see _dt_to_v15)
 _V15_MAP = [
     (("xray", "origin_x"), ("sprite", "xray_x")),
     (("xray", "origin_y"), ("sprite", "xray_y")),
-    (("deepthroat", "origin_y"), ("sprite", "deepthroat_origin_y")),
 ]
+# v1.5 draws a partner's deepthroat strip where the vanilla sWifeDeepthroat goes; Deeproom's spouse loader draws it
+# 70 px higher (legacy_dt_y_offset = -70). Same constant as wbconv.DT_V15_TO_DEEPROOM.
+DT_V15_TO_DEEPROOM = -70
+
+
+def _num(value):
+    try:
+        return float(str(value).strip().strip('"'))
+    except (TypeError, ValueError):
+        return None
+
+
+def _dt_to_v15(ini):
+    """[sprite] deepthroat_origin_y for v1.5 from a Deeproom [deepthroat] origin_y (plus 70)."""
+    if ini.get("sprite", "deepthroat_origin_y") is not None:
+        return
+    v = _num(ini.get("deepthroat", "origin_y"))
+    if v is None:
+        return  # no Deeproom deepthroat block: v1.5 uses its own default (150), within 4 px of Deeproom's
+    ini.add("sprite", "deepthroat_origin_y", f'"{v - DT_V15_TO_DEEPROOM:.6f}"')
 
 _SECTION = re.compile(r"^\s*\[([^\]]*)\]\s*(?:[;#].*)?$")
 _KEYVAL = re.compile(r"^\s*([^=;#\[\]][^=]*?)\s*=\s*(.*?)\s*$")
@@ -124,6 +143,8 @@ def convert(data: bytes, source: str, target: str, name: str = "") -> bytes:
         if source == "wife":
             _derive(ini, _POSE_MAP, forward=False)
         _derive(ini, _V15_MAP, forward=True)
+        if source == "spouse":
+            _dt_to_v15(ini)
     if target.startswith("v15") and name and ini.get("info", "name") is None:
         ini.add("info", "name", '"' + name.replace('"', "'") + '"')
     return ini.to_bytes() if ini.changed else data
