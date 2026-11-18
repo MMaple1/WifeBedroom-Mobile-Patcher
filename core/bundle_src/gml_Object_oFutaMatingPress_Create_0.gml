@@ -1699,7 +1699,9 @@ pm_voice_sel = "";
 pm_voice_name = "";
 pm_dialog = -1;
 pm_http = -1;
-if (false && (os_type == os_android || os_type == os_ios))
+// Phone-added characters come back after a restart: only the folders recorded in phone_mods_registry.txt are
+// loaded (no folder scan, which hung startup in 1.1). REMOVE MOD drops a mod from the registry first.
+if (os_type == os_android || os_type == os_ios)
 {
     var _pm_save = game_save_id;
     if (string_char_at(_pm_save, string_length(_pm_save)) == "/")
@@ -1716,7 +1718,7 @@ if (false && (os_type == os_android || os_type == os_ios))
     {
         _pm_wd = string_copy(_pm_wd, 1, string_length(_pm_wd) - 1);
     }
-    if (file_exists(_pm_wd + "/phone_mods_seed.zip") && !file_exists(_pm_save + "/phone_mods_seed.done"))
+    if (false && file_exists(_pm_wd + "/phone_mods_seed.zip") && !file_exists(_pm_save + "/phone_mods_seed.done"))  // seed import stays off
     {
         var _pm_buf = buffer_load(_pm_wd + "/phone_mods_seed.zip");
         if (_pm_buf >= 0)
@@ -1944,9 +1946,9 @@ if (false && (os_type == os_android || os_type == os_ios))
         file_text_close(_pm_done);
     }
     var _pm_added = 0;
-    var _pm_queue = [_pm_root];
-    var _pm_names = ["mod"];
-    var _pm_depths = [0];
+    var _pm_queue = [];
+    var _pm_names = [];
+    var _pm_depths = [];
     var _pm_reg = pm_registry_read();
     for (var _pm_rg = 0; _pm_rg < array_length(_pm_reg); _pm_rg++)
     {
@@ -1989,7 +1991,7 @@ if (false && (os_type == os_android || os_type == os_ios))
                     var _has_alts = file_exists(_full_path + "/custom_futa_cowgirl_alt_1.png") || file_exists(_full_path + "/custom_futa_mating_press_alt_1.png");
                     ds_list_add(futa_selector_has_deepthroat, _has_deep);
                     ds_list_add(futa_selector_has_alts, _has_alts);
-                    var _preview_spr = func_futa_selector_portrait(_full_path);
+                    var _preview_spr = -1;  // loaded when shown, as for the APK packs
                     ds_list_add(futa_selector_portraits, _preview_spr);
                 }
                 if (ds_list_size(custom_futas_folder) > _pm_before)
@@ -2013,7 +2015,7 @@ if (false && (os_type == os_android || os_type == os_ios))
                         ds_list_add(wife_selector_names, _file);
                         var _legacy_has_deep = file_exists(_full_path + "/custom_deepthroat.png");
                         ds_list_add(wife_selector_has_cowgirl, _legacy_has_deep);
-                        var _w_spr = func_wife_selector_portrait(_full_path);
+                        var _w_spr = -1;  // loaded when shown, as for the APK packs
                         ds_list_add(wife_selector_portraits, _w_spr);
                     }
                 }
@@ -2030,7 +2032,7 @@ if (false && (os_type == os_android || os_type == os_ios))
                         ds_list_add(wife_selector_names, _file);
                         var _w_has_cowgirl = file_exists(_full_path + "/custom_wife_cowgirl_0.png");
                         ds_list_add(wife_selector_has_cowgirl, _w_has_cowgirl);
-                        var _w_spr = func_wife_selector_portrait(_full_path);
+                        var _w_spr = -1;  // loaded when shown, as for the APK packs
                         ds_list_add(wife_selector_portraits, _w_spr);
                     }
                 }
