@@ -2,6 +2,26 @@
 
 WB Mobile Patcher turns your PC game folder or mod zip archive into a signed Android app you can install and play on your phone or tablet.
 
+## Features
+
+- Turns a PC game folder or mod `.zip` into an installable Android app (Wife's Bedroom v1.5, ModRoom v3.3, Deeproom 4.0.3 Kiwami).
+- Touch controls and phone-sized menus.
+- Brings your custom characters, rooms, voices, music, dialogue and texture packs along.
+- Add, remove and share mods on the phone itself (ADD MOD, REMOVE MOD, Share / Open with).
+- Skips packs that would crash the game and tells you why; your mod folder is never changed.
+- Optional Bluetooth toy support.
+
+## What's new in v1.2 (since v1.0)
+
+- **Deeproom 4.0.3 Kiwami and ModRoom v3.3 supported**, alongside v1.5.
+- **Far fewer crashes:** packs missing a sprite, or with sprites the game would cut up wrongly, are left out and listed in a report.
+- **Mods on the phone:** ADD MOD, REMOVE MOD and VOICES on the title screen; added mods survive a restart.
+- **Sprites converted between formats** so characters made for one game look right in another.
+- **Your own signing key:** your builds can only be updated by you. Apps built before v1.2.2 need one uninstall (see Signing below).
+- **Toy support built in** (no separate program needed).
+
+Full list: `core/CHANGELOG.md`. Technical details: `DETAILS.md` and `core/TECHNICAL_SPECIFICATION.md`.
+
 ## Start here
 
 1. Install two free programs: Python (from python.org; check "Add python.exe to PATH") and Java (from adoptium.net, version 17 or newer).
